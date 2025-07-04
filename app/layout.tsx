@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 import { FinancialProvider } from "@/context";
 
@@ -48,18 +49,18 @@ export default function RootLayout({
                     </h1>
                   </div>
                   <nav className="hidden md:flex space-x-8">
-                    <a
-                      href="#"
+                    <Link
+                      href="/"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Dashboard
-                    </a>
-                    <a
-                      href="#"
+                    </Link>
+                    <Link
+                      href="/income"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Income
-                    </a>
+                    </Link>
                     <a
                       href="#"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

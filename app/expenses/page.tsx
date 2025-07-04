@@ -9,6 +9,7 @@ import {
   CreateExpenseInput,
   UpdateExpenseInput,
 } from "@/types";
+import { formatCurrency } from "@/utils/currency";
 
 export default function ExpensesPage() {
   const state = useFinancialState();
@@ -251,7 +252,7 @@ export default function ExpensesPage() {
               Total Monthly Expenses
             </div>
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              ${totalMonthlyExpenses.toFixed(2)}
+              {formatCurrency(totalMonthlyExpenses)}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               from {state.userPlan.expenses.filter((e) => e.isActive).length}{" "}
@@ -369,7 +370,7 @@ export default function ExpensesPage() {
                 Yearly Total
               </div>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                ${(totalMonthlyExpenses * 12).toFixed(0)}
+                {formatCurrency(totalMonthlyExpenses * 12)}
               </div>
             </div>
           </div>
@@ -446,17 +447,22 @@ export default function ExpensesPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount *
+                Amount (THB) *
               </label>
               <input
                 type="number"
                 required
                 min="0"
                 step="0.01"
-                value={formData.amount}
+                value={formData.amount === 0 ? "" : formData.amount}
                 onChange={(e) =>
                   handleInputChange("amount", parseFloat(e.target.value) || 0)
                 }
+                onFocus={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.value = "";
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="0.00"
               />
@@ -682,7 +688,7 @@ export default function ExpensesPage() {
                           Amount
                         </div>
                         <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                          ${expense.amount.toFixed(2)}{" "}
+                          {formatCurrency(expense.amount)}{" "}
                           {expense.frequency && (
                             <span className="text-sm text-gray-500">
                               / {getFrequencyLabel(expense.frequency)}
@@ -695,11 +701,12 @@ export default function ExpensesPage() {
                           Monthly Equivalent
                         </div>
                         <div className="text-lg font-medium text-red-600 dark:text-red-400">
-                          $
-                          {calculateMonthlyAmount(
-                            expense.amount,
-                            expense.frequency
-                          ).toFixed(2)}
+                          {formatCurrency(
+                            calculateMonthlyAmount(
+                              expense.amount,
+                              expense.frequency
+                            )
+                          )}
                         </div>
                       </div>
                       <div>

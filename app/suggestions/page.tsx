@@ -9,6 +9,7 @@ import {
   DEFAULT_SUGGESTION_CONFIG,
 } from "@/utils/suggestionGenerator";
 import { Priority } from "@/types";
+import { formatCurrency } from "@/utils/currency";
 
 export default function SuggestionsPage() {
   const state = useFinancialState();
@@ -38,13 +39,6 @@ export default function SuggestionsPage() {
       DEFAULT_SUGGESTION_CONFIG
     );
   }, [state.userPlan, selectedCategory, showOnlyHighPriority]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(Math.abs(amount));
-  };
 
   const getPriorityColor = (priority: Priority) => {
     switch (priority) {

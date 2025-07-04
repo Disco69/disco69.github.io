@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useFinancialState, useFinancialActions } from "@/context";
 import { Frequency, ExpenseCategory, GoalCategory, Priority } from "@/types";
 import { getHighPrioritySuggestions } from "@/utils/suggestionGenerator";
+import { formatCurrency } from "@/utils/currency";
+import { isIncomeActiveInMonth } from "@/utils/forecastCalculator";
 
 export default function DashboardPage() {
   const state = useFinancialState();
@@ -36,8 +38,9 @@ export default function DashboardPage() {
     }
   };
 
+  const currentDate = new Date();
   const totalMonthlyIncome = state.userPlan.income
-    .filter((income) => income.isActive)
+    .filter((income) => isIncomeActiveInMonth(income, currentDate))
     .reduce(
       (total, income) =>
         total + calculateMonthlyAmount(income.amount, income.frequency),
@@ -117,15 +120,8 @@ export default function DashboardPage() {
     ? getHighPrioritySuggestions(state.userPlan).slice(0, 3)
     : [];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",

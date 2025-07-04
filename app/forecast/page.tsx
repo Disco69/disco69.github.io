@@ -8,10 +8,14 @@ import {
   ForecastResult,
   DEFAULT_FORECAST_CONFIG,
 } from "@/utils/forecastCalculator";
+import { formatCurrency } from "@/utils/currency";
 
 export default function ForecastPage() {
   const state = useFinancialState();
-  const [config, setConfig] = useState<ForecastConfig>(DEFAULT_FORECAST_CONFIG);
+  const [config, setConfig] = useState<ForecastConfig>({
+    ...DEFAULT_FORECAST_CONFIG,
+    startingBalance: state.userPlan?.currentBalance || 0,
+  });
   const [selectedView, setSelectedView] = useState<"table" | "chart" | "goals">(
     "table"
   );
@@ -36,22 +40,12 @@ export default function ForecastPage() {
         goalProgress: [],
       };
 
-    return generateForecast(state.userPlan, {
-      ...config,
-      startingBalance: state.userPlan.currentBalance || 0,
-    });
+    return generateForecast(state.userPlan, config);
   }, [state.userPlan, config]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   const formatMonth = (monthKey: string) => {
     const date = new Date(monthKey + "-01");
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("th-TH", {
       year: "numeric",
       month: "long",
     });
@@ -98,6 +92,42 @@ export default function ForecastPage() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Starting Balance (THB)
+              </label>
+              <div className="flex items-center space-x-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={config.startingBalance || ""}
+                  onFocus={(e) =>
+                    e.target.value === "0" && (e.target.value = "")
+                  }
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      startingBalance: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  className="w-32 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-sm"
+                  placeholder="0.00"
+                />
+                <button
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      startingBalance: state.userPlan?.currentBalance || 0,
+                    })
+                  }
+                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                  title="Reset to current balance"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Conservative Mode
               </label>
               <input
@@ -134,7 +164,7 @@ export default function ForecastPage() {
                 onChange={(e) =>
                   setConfig({ ...config, months: parseInt(e.target.value) })
                 }
-                className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               >
                 <option value={6}>6 months</option>
                 <option value={12}>12 months</option>

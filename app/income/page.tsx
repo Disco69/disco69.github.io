@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useFinancialState, useFinancialActions } from "@/context";
 import { Frequency, CreateIncomeInput, UpdateIncomeInput } from "@/types";
+import { formatCurrency } from "@/utils/currency";
 
 export default function IncomePage() {
   const state = useFinancialState();
@@ -16,6 +17,7 @@ export default function IncomePage() {
     frequency: Frequency.MONTHLY,
     description: "",
     startDate: new Date().toISOString().split("T")[0],
+    endDate: "",
     isActive: true,
   });
 
@@ -54,6 +56,7 @@ export default function IncomePage() {
         frequency: Frequency.MONTHLY,
         description: "",
         startDate: new Date().toISOString().split("T")[0],
+        endDate: "",
         isActive: true,
       });
     } catch (error) {
@@ -68,6 +71,7 @@ export default function IncomePage() {
     frequency: Frequency;
     description?: string;
     startDate?: string;
+    endDate?: string;
     isActive: boolean;
   }) => {
     setFormData({
@@ -78,6 +82,7 @@ export default function IncomePage() {
       startDate: income.startDate
         ? income.startDate.split("T")[0]
         : new Date().toISOString().split("T")[0],
+      endDate: income.endDate ? income.endDate.split("T")[0] : "",
       isActive: income.isActive,
     });
     setEditingIncome(income.id);
@@ -103,6 +108,7 @@ export default function IncomePage() {
       frequency: Frequency.MONTHLY,
       description: "",
       startDate: new Date().toISOString().split("T")[0],
+      endDate: "",
       isActive: true,
     });
   };
@@ -162,10 +168,10 @@ export default function IncomePage() {
               Total Monthly Income
             </div>
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              $${totalMonthlyIncome.toFixed(2)}
+              {formatCurrency(totalMonthlyIncome)}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              from ${state.userPlan.income.filter((i) => i.isActive).length}{" "}
+              from {state.userPlan.income.filter((i) => i.isActive).length}{" "}
               active sources
             </div>
           </div>
@@ -225,17 +231,22 @@ export default function IncomePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount *
+                Amount (THB) *
               </label>
               <input
                 type="number"
                 required
                 min="0"
                 step="0.01"
-                value={formData.amount}
+                value={formData.amount === 0 ? "" : formData.amount}
                 onChange={(e) =>
                   handleInputChange("amount", parseFloat(e.target.value) || 0)
                 }
+                onFocus={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.value = "";
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="0.00"
               />
@@ -271,6 +282,22 @@ export default function IncomePage() {
                 onChange={(e) => handleInputChange("startDate", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => handleInputChange("endDate", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                min={formData.startDate}
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave empty for ongoing income
+              </p>
             </div>
 
             <div className="md:col-span-2">
@@ -376,13 +403,13 @@ export default function IncomePage() {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           Amount
                         </div>
                         <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                          $${income.amount.toFixed(2)}{" "}
+                          {formatCurrency(income.amount)}{" "}
                           <span className="text-sm text-gray-500">
                             / {getFrequencyLabel(income.frequency)}
                           </span>
@@ -393,11 +420,12 @@ export default function IncomePage() {
                           Monthly Equivalent
                         </div>
                         <div className="text-lg font-medium text-green-600 dark:text-green-400">
-                          $$
-                          {calculateMonthlyAmount(
-                            income.amount,
-                            income.frequency
-                          ).toFixed(2)}
+                          {formatCurrency(
+                            calculateMonthlyAmount(
+                              income.amount,
+                              income.frequency
+                            )
+                          )}
                         </div>
                       </div>
                       <div>
@@ -408,6 +436,28 @@ export default function IncomePage() {
                           {income.startDate
                             ? new Date(income.startDate).toLocaleDateString()
                             : "Not set"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          End Date
+                        </div>
+                        <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                          {income.endDate ? (
+                            <span
+                              className={
+                                new Date(income.endDate) < new Date()
+                                  ? "text-red-600 dark:text-red-400"
+                                  : ""
+                              }
+                            >
+                              {new Date(income.endDate).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span className="text-green-600 dark:text-green-400">
+                              Ongoing
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

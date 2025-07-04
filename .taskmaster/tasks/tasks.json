@@ -541,11 +541,94 @@
             "testStrategy": ""
           }
         ]
+      },
+      {
+        "id": 11,
+        "title": "Convert Default Currency to THB",
+        "description": "Convert all default currency from USD to THB (Thai Baht) throughout the entire application, updating all currency formatting, display symbols, and default values.",
+        "details": "Identify all instances where currency is displayed or processed. This includes input fields, display components, reports, and any stored default values. Update currency symbols from '$' to '฿' and ensure all formatting reflects Thai Baht conventions (e.g., decimal places, thousands separators). Modify any hardcoded USD values to their THB equivalents or adjust logic to fetch dynamic currency rates if applicable. Review the `FinancialContext` and any related state management to ensure currency type is consistently managed. Consider creating a global currency setting or utility function to centralize currency conversion and formatting logic.",
+        "testStrategy": "Thoroughly test every page and component that displays or processes currency to ensure the change from USD to THB is complete and accurate. Verify that all currency symbols are '฿'. Input various numerical values to confirm correct formatting (e.g., 1,000.00 should display as 1,000.00฿). Check that calculations involving currency (e.g., in forecasts, goal tracking, dashboard summaries) remain accurate after the currency conversion. Test saving and loading financial plans to ensure currency settings persist correctly. Pay special attention to the Dashboard, Financial Forecast, Monthly Suggestions, and Save/Load functionalities to ensure they reflect the new currency.",
+        "status": "in-progress",
+        "dependencies": [
+          7,
+          8,
+          9,
+          10
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Fix Amount Input Field Behavior and Currency Display",
+        "description": "Address and resolve issues with amount input fields across the application, including default values, auto-clearing behavior, and display of currency symbols.",
+        "details": "Identify all input fields where financial amounts are entered. Implement logic to ensure these fields default to '0' or a similar placeholder, but automatically clear when the user begins typing (on focus or first keypress). Specifically address the double dollar sign display issue on the Income page, ensuring only a single currency symbol is shown. Review and update relevant components and state management (e.g., `FinancialContext`) to ensure consistent behavior. Consider using controlled components and event handlers (e.g., `onFocus`, `onChange`) to manage input field state.",
+        "testStrategy": "1. Navigate to all pages containing amount input fields (e.g., Income, Expenses, Goals). 2. Verify that amount fields initially display '0' or are empty. 3. Click or tab into an amount field and start typing; confirm that the default '0' clears automatically. 4. On the Income page, verify that only a single currency symbol (e.g., '฿' after Task 11) is displayed next to the amount, not a double symbol. 5. Enter various numerical values (integers, decimals) and ensure they are correctly formatted and displayed. 6. Test saving and loading data with these fields to ensure values persist correctly. 7. Verify that the currency symbol updates correctly after Task 11 is completed and integrated.",
+        "status": "in-progress",
+        "dependencies": [
+          4,
+          11
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Add Start and End Date Functionality to Income Management",
+        "description": "Enhance the Income Management module to allow users to specify both a start and an end date for each income source, enabling the management of time-bound income periods.",
+        "details": "Modify the existing income source data structure within the `FinancialContext` to include `startDate` and `endDate` fields. Update the Income Management UI (forms and display) to allow users to input and view these dates. Implement validation to ensure `endDate` is not before `startDate`. Adjust any calculations or displays that rely on income to account for these date ranges, ensuring that income is only considered active within its specified period. Consider how this will impact the financial forecast and monthly suggestions.",
+        "testStrategy": "1. Add new income sources with various start and end dates (e.g., current month to next month, past month to current month, long-term). 2. Edit existing income sources to add or modify start and end dates. 3. Verify that income is correctly recognized and calculated only within its active date range in the Income Management display. 4. Check that the financial forecast and monthly suggestions accurately reflect income based on the new date ranges. 5. Attempt to set an end date before a start date and verify that appropriate validation errors are displayed.",
+        "status": "in-progress",
+        "dependencies": [
+          4
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Fix Goals Page Styling Consistency",
+        "description": "Fix the styling of the Goals page to align with the consistent design patterns established on other pages like Income and Expenses, ensuring a unified user interface.",
+        "details": "Review the CSS and layout of the Goals page. Identify discrepancies in spacing, typography, color palette, component styling (e.g., buttons, input fields, cards), and overall visual hierarchy compared to the Income and Expenses pages. Apply existing Tailwind CSS classes and custom styles used across the application to the Goals page components. Ensure responsive design principles are maintained. Pay close attention to the `Goal` component's presentation, making sure it visually integrates seamlessly with the rest of the application's design language. This may involve updating the `Goal` data model if new styling-related properties are needed, or adjusting how existing properties are rendered.",
+        "testStrategy": "1. Visually inspect the Goals page on various screen sizes (desktop, tablet, mobile) to ensure responsiveness and consistent layout. 2. Compare the Goals page's typography, color scheme, button styles, and input field appearances directly against the Income and Expenses pages. 3. Verify that all elements on the Goals page (e.g., goal cards, progress bars, forms for adding/editing goals) adhere to the established design system. 4. Check for any misaligned elements, incorrect spacing, or inconsistent visual patterns. 5. Ensure that the overall user experience on the Goals page feels cohesive with the rest of the application.",
+        "status": "in-progress",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Implement Starting Balance Input for Forecast Page",
+        "description": "Add a starting balance input field to the Forecast page, allowing users to define an initial balance for their financial projections.",
+        "details": "Modify the Forecast page UI to include a new input field specifically for the starting balance. This field should be clearly labeled and intuitively placed, possibly near the existing forecast controls or parameters. Update the financial forecasting logic (likely within the utility function or service created in Task 8) to incorporate this starting balance into the initial calculation of the 12-month projection. Ensure the input field handles numerical values correctly, potentially leveraging existing input validation or currency formatting components (considering Task 12). The starting balance should serve as the initial capital from which income is added and expenses/goals are subtracted over time.",
+        "testStrategy": "1. Navigate to the Forecast page. 2. Verify the presence and clear labeling of the 'Starting Balance' input field. 3. Enter various positive and negative starting balance values and observe the forecast chart/table. 4. Confirm that the forecast accurately reflects the impact of the starting balance on the initial month's projection and subsequent months. 5. Test with a starting balance of zero to ensure it behaves as expected. 6. Verify that the input field correctly handles numerical input and integrates with any existing currency formatting (e.g., THB from Task 11). 7. Check for any unexpected behavior or errors when the starting balance is changed dynamically.",
+        "status": "in-progress",
+        "dependencies": [
+          8,
+          12
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Fix Import/Export Page Styling Consistency",
+        "description": "Fix the styling of the Import/Export page to align with the consistent design patterns established on other pages, ensuring a unified user interface.",
+        "details": "Review the CSS and layout of the Import/Export page. Identify discrepancies in spacing, typography, color palette, component styling (e.g., buttons, input fields, cards), and overall visual hierarchy compared to other styled pages like Income, Expenses, and Goals. Apply existing Tailwind CSS classes and custom styles used across the application to the Import/Export page components. Ensure responsive design principles are maintained. Pay close attention to the layout of import/export controls, file upload areas, and any status messages, making sure they visually integrate seamlessly with the rest of the application.",
+        "testStrategy": "1. Visually inspect the Import/Export page on various screen sizes (desktop, tablet, mobile) to ensure responsiveness and consistent layout. 2. Compare the Import/Export page's typography, color scheme, button styles, input field appearances, and overall component styling directly against the Income, Expenses, and Goals pages. 3. Verify that all interactive elements (e.g., file upload buttons, import/export triggers) maintain consistent hover, focus, and active states. 4. Ensure error and success messages related to import/export operations follow the application's standard notification styling. 5. Test with different themes (if applicable) to ensure styling consistency across themes.",
+        "status": "in-progress",
+        "dependencies": [
+          14
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-04T19:04:19.786Z",
+      "updated": "2025-07-04T19:35:12.013Z",
       "description": "Tasks for master context"
     }
   }

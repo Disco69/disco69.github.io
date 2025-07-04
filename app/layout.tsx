@@ -67,18 +67,24 @@ export default function RootLayout({
                     >
                       Expenses
                     </Link>
-                    <a
-                      href="#"
+                    <Link
+                      href="/goals"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Goals
-                    </a>
+                    </Link>
                     <a
                       href="#"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Forecast
                     </a>
+                    <Link
+                      href="/import-export"
+                      className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Import/Export
+                    </Link>
                   </nav>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { useFinancialState, useFinancialActions } from "@/context";
 import { Frequency, ExpenseCategory, GoalCategory, Priority } from "@/types";
+import { getHighPrioritySuggestions } from "@/utils/suggestionGenerator";
 
 export default function DashboardPage() {
   const state = useFinancialState();
@@ -110,6 +111,11 @@ export default function DashboardPage() {
         goal.priority === Priority.HIGH || goal.priority === Priority.CRITICAL
     )
     .slice(0, 3);
+
+  // Get high priority suggestions
+  const highPrioritySuggestions = state.userPlan
+    ? getHighPrioritySuggestions(state.userPlan).slice(0, 3)
+    : [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -463,6 +469,58 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* High Priority Suggestions */}
+      {highPrioritySuggestions.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              💡 Priority Suggestions
+            </h3>
+            <Link
+              href="/suggestions"
+              className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {highPrioritySuggestions.map((suggestion) => (
+              <div
+                key={suggestion.id}
+                className="p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                    <span className="text-orange-600 dark:text-orange-400">
+                      ⚠️
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                      {suggestion.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                      {suggestion.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Impact: {formatCurrency(suggestion.estimatedImpact)}
+                        /month
+                      </span>
+                      {suggestion.actionable && (
+                        <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded">
+                          Actionable
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

@@ -73,12 +73,18 @@ export default function RootLayout({
                     >
                       Goals
                     </Link>
-                    <a
-                      href="#"
+                    <Link
+                      href="/forecast"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Forecast
-                    </a>
+                    </Link>
+                    <Link
+                      href="/suggestions"
+                      className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Suggestions
+                    </Link>
                     <Link
                       href="/import-export"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

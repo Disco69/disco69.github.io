@@ -54,7 +54,7 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -62,7 +62,7 @@
             "description": "Create TypeScript interfaces for Income, Expense, Goal, and Forecast, ensuring correct types and properties for each.",
             "dependencies": [],
             "details": "This involves creating separate .ts files or a single file with distinct interfaces for each core data entity. Focus on accurately representing the data structure for each.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -73,7 +73,7 @@
               1
             ],
             "details": "This interface will serve as the top-level data structure for a user's financial plan, incorporating arrays or objects of the individual data models defined in the previous step.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -545,7 +545,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-04T17:33:44.900Z",
+      "updated": "2025-07-04T17:40:10.680Z",
       "description": "Tasks for master context"
     }
   }

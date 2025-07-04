@@ -61,12 +61,12 @@ export default function RootLayout({
                     >
                       Income
                     </Link>
-                    <a
-                      href="#"
+                    <Link
+                      href="/expenses"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Expenses
-                    </a>
+                    </Link>
                     <a
                       href="#"
                       className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

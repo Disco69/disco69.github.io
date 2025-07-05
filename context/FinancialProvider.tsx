@@ -362,56 +362,6 @@ export function FinancialProvider({
     []
   );
 
-  const updateForecastStartingBalance = useCallback(
-    async (balance: number): Promise<void> => {
-      try {
-        dispatch(actions.clearError("generalError"));
-
-        dispatch(actions.updateForecastStartingBalance(balance));
-
-        // Save to localStorage
-        const { saveForecastConfig } = await import("./storage");
-        await saveForecastConfig({
-          startingBalance: balance,
-          selectedYear: state.forecastConfig.selectedYear,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to update forecast starting balance";
-        dispatch(actions.setGeneralError(errorMessage));
-        throw error;
-      }
-    },
-    [state.forecastConfig.selectedYear]
-  );
-
-  const updateForecastSelectedYear = useCallback(
-    async (year: number): Promise<void> => {
-      try {
-        dispatch(actions.clearError("generalError"));
-
-        dispatch(actions.updateForecastSelectedYear(year));
-
-        // Save to localStorage
-        const { saveForecastConfig } = await import("./storage");
-        await saveForecastConfig({
-          startingBalance: state.forecastConfig.startingBalance,
-          selectedYear: year,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to update forecast selected year";
-        dispatch(actions.setGeneralError(errorMessage));
-        throw error;
-      }
-    },
-    [state.forecastConfig.startingBalance]
-  );
-
   const saveUserPlan = useCallback(async (): Promise<void> => {
     try {
       dispatch(actions.setSaving(true));
@@ -436,22 +386,12 @@ export function FinancialProvider({
       dispatch(actions.clearError("generalError"));
 
       // Import storage function dynamically to avoid SSR issues
-      const { loadUserPlan: loadFromStorage, loadForecastConfig } =
-        await import("./storage");
+      const { loadUserPlan: loadFromStorage } = await import("./storage");
       const loadedPlan = await loadFromStorage();
-      const loadedConfig = await loadForecastConfig();
 
       if (loadedPlan) {
         dispatch(actions.loadSuccess(loadedPlan));
-      }
-
-      if (loadedConfig) {
-        dispatch(
-          actions.updateForecastStartingBalance(loadedConfig.startingBalance)
-        );
-      }
-
-      if (!loadedPlan && !loadedConfig) {
+      } else {
         dispatch(actions.setLoading(false));
       }
     } catch (error) {
@@ -488,8 +428,6 @@ export function FinancialProvider({
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
-    updateForecastStartingBalance,
-    updateForecastSelectedYear,
     saveUserPlan,
     loadUserPlan,
     resetAll,
@@ -525,8 +463,6 @@ export function useFinancialActions() {
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
-    updateForecastStartingBalance,
-    updateForecastSelectedYear,
     saveUserPlan,
     loadUserPlan,
     resetAll,
@@ -545,8 +481,6 @@ export function useFinancialActions() {
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
-    updateForecastStartingBalance,
-    updateForecastSelectedYear,
     saveUserPlan,
     loadUserPlan,
     resetAll,

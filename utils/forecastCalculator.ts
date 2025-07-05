@@ -15,7 +15,6 @@ import {
   Priority,
   GoalType,
 } from "@/types";
-import { formatCurrency } from "@/utils/currency";
 
 /**
  * Configuration for forecast calculation
@@ -162,7 +161,7 @@ export function isIncomeActiveInMonth(
 }
 
 /**
- * Check if an expense is active in a specific month
+ * Check if an expense is active for a given month
  */
 export function isExpenseActiveInMonth(
   expense: Expense,
@@ -190,74 +189,22 @@ export function isExpenseActiveInMonth(
     return currentMonthStart >= startDate && currentMonthStart < endDate;
   }
 
-  // For recurring expenses, they are active every month after their start date
+  // For recurring expenses, they are always active once created
   if (expense.recurring) {
-    // Check if expense has started (based on dueDate as start reference)
-    const expenseStartDate = new Date(expense.dueDate);
-    const monthStart = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth(),
-      1
-    );
-
-    // Recurring expenses are active if the month is at or after the expense start month
-    return (
-      monthStart >=
-      new Date(expenseStartDate.getFullYear(), expenseStartDate.getMonth(), 1)
-    );
+    return true;
   }
 
-  // For one-time expenses, they are only active in the month they are due
-  if (expense.frequency === Frequency.ONE_TIME || !expense.recurring) {
-    const dueDate = new Date(expense.dueDate);
-    const monthStart = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth(),
-      1
-    );
-    const monthEnd = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth() + 1,
-      0
-    );
+  // For one-time expenses, check if the due date is in the current month
+  const dueDate = new Date(expense.dueDate);
+  const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const monthEnd = new Date(
+    monthDate.getFullYear(),
+    monthDate.getMonth() + 1,
+    0
+  );
 
-    // One-time expenses only appear in the month they are due
-    return dueDate >= monthStart && dueDate <= monthEnd;
-  }
-
-  // For other frequency-based expenses, check if they should occur in this month
-  if (expense.frequency && expense.frequency !== Frequency.MONTHLY) {
-    const dueDate = new Date(expense.dueDate);
-    const monthStart = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth(),
-      1
-    );
-
-    // Calculate if this expense should occur in this month based on frequency
-    const monthsSinceStart =
-      (monthDate.getFullYear() - dueDate.getFullYear()) * 12 +
-      (monthDate.getMonth() - dueDate.getMonth());
-
-    switch (expense.frequency) {
-      case Frequency.QUARTERLY:
-        return monthsSinceStart >= 0 && monthsSinceStart % 3 === 0;
-      case Frequency.YEARLY:
-        return monthsSinceStart >= 0 && monthsSinceStart % 12 === 0;
-      case Frequency.WEEKLY:
-      case Frequency.BIWEEKLY:
-      case Frequency.DAILY:
-        // For sub-monthly frequencies, they effectively occur every month
-        return (
-          monthStart >= new Date(dueDate.getFullYear(), dueDate.getMonth(), 1)
-        );
-      default:
-        return false;
-    }
-  }
-
-  // Default case: if recurring and no specific frequency, treat as monthly
-  return expense.recurring;
+  // One-time expenses are only active in the month they're due
+  return dueDate >= monthStart && dueDate <= monthEnd;
 }
 
 /**
@@ -326,6 +273,13 @@ export function calculateSmartGoalAllocations(
   const allocations: Array<{ id: string; name: string; amount: number }> = [];
   let remainingSurplus = availableSurplus;
 
+  // Add debug logging
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `Smart goal allocation: Available surplus = ${availableSurplus}, Active goals = ${activeGoals.length}`
+    );
+  }
+
   for (const goal of activeGoals) {
     if (remainingSurplus <= 0) break;
 
@@ -355,20 +309,40 @@ export function calculateSmartGoalAllocations(
         )
       );
 
-      // Calculate required monthly contribution
-      requiredAmount = Math.min(
-        remainingAmount,
-        remainingAmount / monthsUntilTarget
-      );
+      // If target date is in the past, use aggressive allocation
+      if (targetDate < currentMonth) {
+        // Allocate up to 50% of remaining surplus for overdue goals
+        requiredAmount = Math.min(remainingAmount, remainingSurplus * 0.5);
+      } else {
+        // Calculate required monthly contribution
+        const monthlyRequired = remainingAmount / monthsUntilTarget;
+
+        // Don't allocate more than needed for this month, but ensure minimum progress
+        requiredAmount = Math.min(
+          remainingAmount,
+          Math.max(monthlyRequired, remainingSurplus * 0.1) // At least 10% of surplus
+        );
+      }
     } else {
       // For open-ended goals, allocate based on priority and available surplus
       // Use a percentage of remaining surplus based on priority
       const priorityMultiplier = getPriorityMultiplier(goal.priority);
-      requiredAmount = remainingSurplus * 0.2 * priorityMultiplier; // Base 20% allocation
+      const baseAllocation = remainingSurplus * 0.15; // Base 15% allocation
+      requiredAmount = baseAllocation * priorityMultiplier;
     }
 
-    // Don't allocate more than available surplus
-    const allocation = Math.min(requiredAmount, remainingSurplus);
+    // Apply priority-based minimum allocation
+    const priorityMultiplier = getPriorityMultiplier(goal.priority);
+    const minimumAllocation = Math.min(
+      remainingSurplus * 0.05 * priorityMultiplier,
+      remainingSurplus
+    );
+
+    // Don't allocate more than available surplus, but ensure minimum for high priority
+    const allocation = Math.max(
+      minimumAllocation,
+      Math.min(requiredAmount, remainingSurplus)
+    );
 
     if (allocation > 0) {
       allocations.push({
@@ -377,6 +351,13 @@ export function calculateSmartGoalAllocations(
         amount: allocation,
       });
       remainingSurplus -= allocation;
+
+      // Add debug logging
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Allocated ${allocation} to goal ${goal.name}, remaining surplus: ${remainingSurplus}`
+        );
+      }
     }
   }
 
@@ -458,17 +439,24 @@ export function generateForecast(
   };
 
   const finalConfig = { ...defaultConfig, ...config };
-
-  // Always start from January of the current year (or specified year)
-  const baseDate = finalConfig.startDate || new Date();
-  const startDate = new Date(baseDate.getFullYear(), 0, 1); // January 1st of the year
-
   const monthlyForecasts: MonthlyForecast[] = [];
   let currentBalance = finalConfig.startingBalance;
 
+  // Add debug logging for forecast configuration
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 Forecast Generation Started");
+    console.log("Config:", finalConfig);
+    console.log("User Plan Summary:", {
+      income: userPlan.income.length,
+      expenses: userPlan.expenses.length,
+      goals: userPlan.goals.length,
+      currentBalance: userPlan.currentBalance,
+    });
+  }
+
   // Generate forecasts for each month
   for (let monthIndex = 0; monthIndex < finalConfig.months; monthIndex++) {
-    const currentDate = new Date(startDate);
+    const currentDate = new Date(finalConfig.startDate || new Date());
     currentDate.setMonth(currentDate.getMonth() + monthIndex);
     currentDate.setDate(1); // Set to first day of month
 
@@ -477,6 +465,15 @@ export function generateForecast(
     )
       .toString()
       .padStart(2, "0")}`;
+
+    // Store starting balance for this month
+    const monthStartingBalance = currentBalance;
+
+    // Add debug logging for each month
+    if (process.env.NODE_ENV === "development") {
+      console.log(`\n📅 Processing ${monthKey}:`);
+      console.log(`Starting balance: ${monthStartingBalance}`);
+    }
 
     // Calculate income for this month
     const incomeBreakdown: Array<{ id: string; name: string; amount: number }> =
@@ -501,6 +498,11 @@ export function generateForecast(
           amount: monthlyAmount,
         });
         totalIncome += monthlyAmount;
+
+        // Add debug logging for income
+        if (process.env.NODE_ENV === "development") {
+          console.log(`  💰 Income: ${income.name} = ${monthlyAmount}`);
+        }
       }
     }
 
@@ -518,12 +520,32 @@ export function generateForecast(
 
         // Handle installment expenses
         if (expense.isInstallment && expense.installmentMonths) {
+          // For installments, the expense.amount is the total amount to be split
           monthlyAmount = expense.amount / expense.installmentMonths;
-        } else {
+
+          // Add debug logging for installment calculations
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              `  📦 Installment expense ${expense.name}: Total=${expense.amount}, Months=${expense.installmentMonths}, Monthly=${monthlyAmount}`
+            );
+          }
+        } else if (expense.recurring && expense.frequency) {
+          // For recurring expenses, calculate based on frequency
           monthlyAmount = calculateMonthlyAmount(
             expense.amount,
-            expense.frequency || Frequency.MONTHLY
+            expense.frequency
           );
+        } else {
+          // For one-time expenses, use the full amount
+          monthlyAmount = expense.amount;
+        }
+
+        // Validate the calculated amount
+        if (monthlyAmount < 0) {
+          console.warn(
+            `⚠️  Negative expense amount calculated for ${expense.name}: ${monthlyAmount}`
+          );
+          monthlyAmount = 0;
         }
 
         // Apply conservative mode adjustment
@@ -537,7 +559,23 @@ export function generateForecast(
           amount: monthlyAmount,
         });
         totalExpenses += monthlyAmount;
+
+        // Add debug logging for expenses
+        if (process.env.NODE_ENV === "development") {
+          console.log(`  💸 Expense: ${expense.name} = ${monthlyAmount}`);
+        }
       }
+    }
+
+    // Calculate available cash after essential expenses
+    const availableCashAfterExpenses =
+      currentBalance + totalIncome - totalExpenses;
+
+    // Add debug logging for cash flow
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `  📊 Cash Flow: Income=${totalIncome}, Expenses=${totalExpenses}, Available=${availableCashAfterExpenses}`
+      );
     }
 
     // Calculate goal contributions for this month
@@ -546,33 +584,79 @@ export function generateForecast(
     let totalGoalContributions = 0;
 
     if (finalConfig.includeGoalContributions) {
-      // Calculate surplus cash available for goals
-      const surplusAfterExpenses = totalIncome - totalExpenses;
+      // Only allocate to goals if we have positive cash flow or sufficient balance
+      const surplusForGoals = totalIncome - totalExpenses;
 
-      if (surplusAfterExpenses > 0) {
-        // Use smart goal allocation based on priority
-        const smartAllocations = calculateSmartGoalAllocations(
-          userPlan.goals,
-          surplusAfterExpenses,
-          currentDate
+      if (surplusForGoals > 0 || availableCashAfterExpenses > 0) {
+        // Use the minimum of surplus or available cash for goal allocation
+        const availableForGoals = Math.max(
+          0,
+          Math.min(surplusForGoals, availableCashAfterExpenses)
         );
 
-        goalBreakdown.push(...smartAllocations);
-        totalGoalContributions = smartAllocations.reduce(
-          (sum, allocation) => sum + allocation.amount,
-          0
-        );
+        if (availableForGoals > 0) {
+          // Use smart goal allocation based on priority
+          const smartAllocations = calculateSmartGoalAllocations(
+            userPlan.goals,
+            availableForGoals,
+            currentDate
+          );
+
+          goalBreakdown.push(...smartAllocations);
+          totalGoalContributions = smartAllocations.reduce(
+            (sum, allocation) => sum + allocation.amount,
+            0
+          );
+
+          // Ensure we don't allocate more than available
+          if (totalGoalContributions > availableForGoals) {
+            const scaleFactor = availableForGoals / totalGoalContributions;
+            goalBreakdown.forEach((allocation) => {
+              allocation.amount *= scaleFactor;
+            });
+            totalGoalContributions = availableForGoals;
+
+            if (process.env.NODE_ENV === "development") {
+              console.log(
+                `  🎯 Goal allocations scaled by ${scaleFactor.toFixed(2)}`
+              );
+            }
+          }
+
+          // Add debug logging for goal allocations
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              `  🎯 Goal allocations: Total=${totalGoalContributions}, Available=${availableForGoals}`
+            );
+            goalBreakdown.forEach((allocation) => {
+              console.log(`    - ${allocation.name}: ${allocation.amount}`);
+            });
+          }
+        }
+      } else {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `  🎯 No goal allocations: Surplus=${surplusForGoals}, Available=${availableCashAfterExpenses}`
+          );
+        }
       }
     }
 
     // Calculate net change and ending balance
     const netChange = totalIncome - totalExpenses - totalGoalContributions;
-    const endingBalance = currentBalance + netChange;
+    const endingBalance = monthStartingBalance + netChange;
+
+    // Add debug logging for final calculations
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `  📈 Final: NetChange=${netChange}, EndingBalance=${endingBalance}`
+      );
+    }
 
     // Create monthly forecast
     const monthlyForecast: MonthlyForecast = {
       month: monthKey,
-      startingBalance: currentBalance,
+      startingBalance: monthStartingBalance,
       income: totalIncome,
       expenses: totalExpenses,
       goalContributions: totalGoalContributions,
@@ -584,7 +668,17 @@ export function generateForecast(
     };
 
     monthlyForecasts.push(monthlyForecast);
+
+    // Update current balance for next month
     currentBalance = endingBalance;
+  }
+
+  // Add debug logging for summary
+  if (process.env.NODE_ENV === "development") {
+    console.log("\n📋 Forecast Summary:");
+    console.log(`Total months: ${monthlyForecasts.length}`);
+    console.log(`Starting balance: ${finalConfig.startingBalance}`);
+    console.log(`Final balance: ${currentBalance}`);
   }
 
   // Calculate summary statistics
@@ -720,149 +814,3 @@ export const DEFAULT_FORECAST_CONFIG: ForecastConfig = {
   includeGoalContributions: true,
   conservativeMode: false,
 };
-
-/**
- * Generate a detailed monthly goal allocation schedule
- */
-export function generateMonthlyGoalAllocationSchedule(
-  userPlan: UserPlan,
-  config: Partial<ForecastConfig> = {}
-): {
-  monthlySchedule: Array<{
-    month: string;
-    totalSurplus: number;
-    goalAllocations: Array<{
-      goalId: string;
-      goalName: string;
-      amount: number;
-      priority: Priority;
-      priorityOrder: number;
-      isOnTrack: boolean;
-      remainingAmount: number;
-      targetDate: string;
-    }>;
-    guidance: string;
-  }>;
-  summary: {
-    totalAllocated: number;
-    goalsOnTrack: number;
-    goalsBehindSchedule: number;
-    averageMonthlyAllocation: number;
-  };
-} {
-  // Ensure the forecast starts from January by setting the config
-  const januaryConfig = {
-    ...config,
-    startDate: config.startDate
-      ? new Date(config.startDate.getFullYear(), 0, 1)
-      : new Date(new Date().getFullYear(), 0, 1),
-  };
-
-  // Generate full forecast to get monthly surplus data
-  const forecast = generateForecast(userPlan, januaryConfig);
-
-  const monthlySchedule = forecast.monthlyForecasts.map((month) => {
-    const surplus = month.income - month.expenses;
-    const goalAllocations = month.goalBreakdown.map((allocation) => {
-      const goal = userPlan.goals.find((g) => g.id === allocation.id);
-      if (!goal) {
-        return {
-          goalId: allocation.id,
-          goalName: allocation.name,
-          amount: allocation.amount,
-          priority: Priority.MEDIUM,
-          priorityOrder: 1,
-          isOnTrack: true,
-          remainingAmount: 0,
-          targetDate: "",
-        };
-      }
-
-      const remainingAmount = Math.max(
-        0,
-        goal.targetAmount - goal.currentAmount
-      );
-      const goalProgress = forecast.goalProgress.find(
-        (gp) => gp.id === goal.id
-      );
-
-      return {
-        goalId: allocation.id,
-        goalName: allocation.name,
-        amount: allocation.amount,
-        priority: goal.priority,
-        priorityOrder: goal.priorityOrder,
-        isOnTrack: goalProgress?.onTrack || false,
-        remainingAmount,
-        targetDate: goal.targetDate,
-      };
-    });
-
-    // Generate guidance message
-    let guidance = "";
-    if (surplus <= 0) {
-      guidance = "No surplus available for goal contributions this month.";
-    } else if (goalAllocations.length === 0) {
-      guidance = "Surplus available but no active goals to allocate to.";
-    } else {
-      const topAllocation = goalAllocations.reduce((max, current) =>
-        current.amount > max.amount ? current : max
-      );
-
-      if (goalAllocations.length === 1) {
-        guidance = `Allocate ${formatCurrency(topAllocation.amount)} to ${
-          topAllocation.goalName
-        }.`;
-      } else {
-        const totalAllocated = goalAllocations.reduce(
-          (sum, g) => sum + g.amount,
-          0
-        );
-        guidance = `Allocate ${formatCurrency(totalAllocated)} across ${
-          goalAllocations.length
-        } goals. Focus on ${topAllocation.goalName} (${formatCurrency(
-          topAllocation.amount
-        )}).`;
-      }
-    }
-
-    return {
-      month: month.month,
-      totalSurplus: surplus,
-      goalAllocations,
-      guidance,
-    };
-  });
-
-  // Calculate summary
-  const totalAllocated = monthlySchedule.reduce(
-    (sum, month) =>
-      sum +
-      month.goalAllocations.reduce(
-        (monthSum, goal) => monthSum + goal.amount,
-        0
-      ),
-    0
-  );
-
-  const goalsOnTrack = monthlySchedule
-    .flatMap((month) => month.goalAllocations)
-    .filter((g) => g.isOnTrack).length;
-
-  const goalsBehindSchedule = monthlySchedule
-    .flatMap((month) => month.goalAllocations)
-    .filter((g) => !g.isOnTrack).length;
-
-  const averageMonthlyAllocation =
-    totalAllocated / Math.max(monthlySchedule.length, 1);
-
-  return {
-    monthlySchedule,
-    summary: {
-      totalAllocated,
-      goalsOnTrack,
-      goalsBehindSchedule,
-      averageMonthlyAllocation,
-    },
-  };
-}

@@ -766,7 +766,7 @@
         "description": "Enhance the Financial Goals module with a detailed monthly goal allocation breakdown, including a calendar view, scheduling, visual indicators, and export functionality.",
         "details": "Implement a new section within the Financial Goals module dedicated to monthly goal allocation. This section should display a detailed breakdown of when and how much money to allocate to each goal on a month-by-month basis. \n\n**Key Features:**\n1.  **Monthly Breakdown Table/List:** Create a clear table or list view showing each month, the goals targeted for that month, and the recommended allocation amount for each goal.\n2.  **Calendar/Timeline View:** Develop an interactive calendar or timeline visualization that visually represents the monthly goal allocations. This could involve highlighting specific months with allocation amounts or using a Gantt-chart-like representation.\n3.  **Goal Allocation Scheduling Logic:** Integrate with the existing smart goal allocation logic (Task 18) and financial forecast (Task 8) to generate realistic and optimized month-by-month allocation recommendations. This logic should consider goal priorities, target dates, current progress, and projected income/expenses.\n4.  **Visual Indicators:** Add visual cues (e.g., color-coding, icons, progress bars) to indicate optimal allocation timing, potential shortfalls, or successful allocations.\n5.  **Actionable Guidance:** Provide concise, month-specific guidance messages (e.g., 'In March, allocate ฿2,000 to Goal A and ฿1,500 to Goal B') directly within the breakdown or calendar view.\n6.  **Integration with Smart Goal Allocation:** Ensure seamless integration with the 'Implement Smart Goal Progress Tracking and Allocation' (Task 18) to leverage its priority system and forecast-based calculations for generating the monthly breakdown.\n7.  **Export Functionality:** Implement a feature to export the generated monthly goal allocation schedule (e.g., to CSV or PDF format). This will require considering data formatting for export.\n\n**Technical Considerations:**\n*   Utilize existing financial data from `FinancialContext` (Task 3) and the financial forecast (Task 8).\n*   Design a user-friendly interface that clearly presents complex allocation data.\n*   Ensure responsiveness for various screen sizes.\n*   Consider performance implications for generating and displaying detailed monthly data over extended periods.",
         "testStrategy": "1.  **Verify Monthly Breakdown Accuracy:**\n    *   Create multiple goals with varying target amounts, target dates, and priorities.\n    *   Input diverse income and expense scenarios.\n    *   Verify that the monthly allocation breakdown accurately reflects the smart allocation logic, distributing funds correctly across months and goals based on priorities and forecast.\n    *   Test edge cases (e.g., insufficient funds, goals already met).\n2.  **Validate Calendar/Timeline View:**\n    *   Confirm that the calendar/timeline view visually represents the monthly allocations correctly, showing the right amounts in the right months.\n    *   Test interactivity (if applicable) and ensure visual indicators are displayed as expected.\n3.  **Test Actionable Guidance:**\n    *   Verify that the month-specific guidance messages are accurate, clear, and align with the displayed allocations.\n4.  **Confirm Smart Allocation Integration:**\n    *   Modify goal priorities and observe if the monthly breakdown adjusts accordingly.\n    *   Change income/expense data and verify that the allocation schedule updates to reflect the new financial forecast.\n5.  **Test Export Functionality:**\n    *   Generate a monthly allocation schedule.\n    *   Attempt to export the schedule to CSV/PDF.\n    *   Open the exported file and verify that the data is correctly formatted and complete, matching the on-screen display.\n6.  **UI/UX Review:**\n    *   Ensure the new features are intuitive, easy to understand, and visually consistent with the rest of the application's design language. Check responsiveness across devices.",
-        "status": "done",
+        "status": "pending",
         "dependencies": [
           4,
           5,
@@ -782,7 +782,7 @@
             "title": "Design Monthly Goal Allocation Calendar UI",
             "description": "Create calendar/timeline UI component for monthly goal allocation display",
             "details": "Design visual calendar showing month-by-month goal allocation recommendations",
-            "status": "done",
+            "status": "pending",
             "dependencies": [],
             "parentTaskId": 21
           },
@@ -791,7 +791,7 @@
             "title": "Implement Goal Allocation Scheduling Algorithm",
             "description": "Create algorithm for scheduling goal allocations based on priority and surplus",
             "details": "Develop logic to determine optimal monthly allocation amounts for each goal",
-            "status": "done",
+            "status": "pending",
             "dependencies": [],
             "parentTaskId": 21
           },
@@ -800,7 +800,7 @@
             "title": "Create Month-by-Month Allocation Breakdown",
             "description": "Display detailed allocation breakdown showing specific amounts per month per goal",
             "details": "Show clear breakdown like 'March: ฿2,000 to Emergency Fund, ฿1,500 to Vacation'",
-            "status": "done",
+            "status": "pending",
             "dependencies": [
               1,
               2
@@ -812,7 +812,7 @@
             "title": "Add Export Functionality for Allocation Schedule",
             "description": "Implement export functionality for goal allocation schedule",
             "details": "Allow users to export monthly allocation schedule as PDF or CSV",
-            "status": "done",
+            "status": "pending",
             "dependencies": [
               3
             ],
@@ -920,7 +920,7 @@
         "description": "Enhance the Forecast page by implementing a January-based timeline, persistent starting balance, improved UI/UX for balance management, multi-year forecasting, and state management with reset functionality.",
         "details": "This task focuses on a significant overhaul of the Forecast page's timeline and starting balance features.\n\n**1. January-Based Forecast Timeline:**\n*   Modify the forecast generation logic (likely within the utility function from Task 8) to always start the 12-month projection from January of the current year, regardless of the actual current month.\n*   Update the UI to reflect this January start, ensuring month labels and data align correctly.\n\n**2. Persistent Starting Balance:**\n*   Integrate the starting balance (from Task 15) with the global state management (Task 3) to ensure it persists across user sessions and page reloads.\n*   When the application loads, retrieve the saved starting balance and pre-populate the input field.\n\n**3. Improved UI/UX for Starting Balance:**\n*   Design and implement a more prominent and intuitive input mechanism for the starting balance. This could be a dedicated section in the Forecast page settings, a modal, or a clearly visible input field with a label like \"Starting Balance for January\".\n*   Consider adding inline help text or tooltips to explain the purpose of the starting balance.\n\n**4. Multi-Year Forecasting with Year Selection:**\n*   Extend the forecast calculation to support projections beyond 12 months, allowing for multi-year forecasts (e.g., 2, 3, or 5 years).\n*   Add a year selection dropdown or similar UI element on the Forecast page, enabling users to choose the number of years for the projection.\n*   Ensure the forecast calculations correctly extend income, expenses, and goal impacts over the selected multi-year period.\n\n**5. Proper State Management for Forecast Configuration:**\n*   Centralize the forecast configuration (e.g., starting month, number of years, starting balance) within the global state management (Task 3) to ensure consistency and easy access across components.\n*   When any of these configurations change, trigger a re-calculation and re-render of the forecast.\n\n**6. Reset Functionality for Starting Balance:**\n*   Implement a \"Reset\" button or similar control that allows users to revert the starting balance to a default value (e.g., 0 or the actual current balance if available).\n*   Ensure this reset action also updates the persistent storage and triggers a forecast recalculation.",
         "testStrategy": "**1. January Start Date Verification:**\n*   Navigate to the Forecast page in different months (e.g., March, July, November).\n*   Verify that the forecast timeline consistently starts from January of the current year.\n*   Check that the monthly projections correctly align with the January start.\n\n**2. Starting Balance Persistence Test:**\n*   Enter a starting balance value on the Forecast page.\n*   Navigate away from the Forecast page and then return, or refresh the browser.\n*   Verify that the entered starting balance is retained and displayed correctly.\n*   Close and reopen the application; confirm the starting balance persists.\n\n**3. UI/UX for Starting Balance:**\n*   Assess the new UI/UX for setting the starting balance. Is it intuitive, clearly labeled, and easy to use?\n*   Test various input values (positive, negative, zero) and ensure proper validation and display.\n\n**4. Multi-Year Forecasting:**\n*   Select different year ranges (e.g., 1 year, 2 years, 5 years) using the new year selection control.\n*   Verify that the forecast extends correctly for the selected duration.\n*   Manually check a few distant months/years in the multi-year forecast to ensure calculations remain accurate.\n\n**5. State Management and Recalculation:**\n*   Change the starting balance, year selection, or other forecast configurations.\n*   Verify that the forecast immediately recalculates and updates the display.\n*   Ensure no stale data is shown after configuration changes.\n\n**6. Reset Starting Balance:**\n*   Set a custom starting balance.\n*   Click the 'Reset' button.\n*   Verify that the starting balance reverts to its default value (e.g., 0) and the forecast updates accordingly.\n*   Confirm that the reset value is also persisted if the default is meant to be saved.",
-        "status": "done",
+        "status": "pending",
         "dependencies": [
           8,
           15,
@@ -933,7 +933,7 @@
             "title": "Modify Forecast to Start from January",
             "description": "Change forecast generation to always begin from January instead of current month",
             "details": "Update the forecast calculator to generate 12 months starting from January of the current year",
-            "status": "done",
+            "status": "pending",
             "dependencies": [],
             "parentTaskId": 23
           },
@@ -942,7 +942,7 @@
             "title": "Implement Persistent Starting Balance Storage",
             "description": "Add localStorage and context management for persistent starting balance",
             "details": "Store user's preferred starting balance and restore it on app reload",
-            "status": "done",
+            "status": "pending",
             "dependencies": [],
             "parentTaskId": 23
           },
@@ -951,7 +951,7 @@
             "title": "Create Improved Starting Balance UI",
             "description": "Design and implement better UI for setting and managing starting balance",
             "details": "Create a more prominent and user-friendly interface for starting balance input",
-            "status": "done",
+            "status": "pending",
             "dependencies": [
               2
             ],
@@ -962,7 +962,7 @@
             "title": "Add Year Selection for Multi-Year Forecasting",
             "description": "Implement year selection dropdown to enable multi-year forecasting capabilities",
             "details": "Allow users to view forecasts for different years (current, next year, etc.)",
-            "status": "done",
+            "status": "pending",
             "dependencies": [
               1
             ],
@@ -973,7 +973,7 @@
             "title": "Implement Reset Functionality",
             "description": "Add reset functionality to restore default starting balance",
             "details": "Provide users with option to reset to current balance from user plan",
-            "status": "done",
+            "status": "pending",
             "dependencies": [
               2,
               3
@@ -985,7 +985,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-05T05:03:59.533Z",
+      "updated": "2025-07-05T05:25:30.929Z",
       "description": "Tasks for master context"
     }
   }

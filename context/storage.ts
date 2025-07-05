@@ -13,7 +13,6 @@ import { UserPlan } from "../types";
 
 const STORAGE_KEYS = {
   USER_PLAN: "finance-planner-user-plan",
-  FORECAST_CONFIG: "finance-planner-forecast-config",
   APP_SETTINGS: "finance-planner-settings",
   BACKUP_DATA: "finance-planner-backup",
 } as const;
@@ -158,77 +157,6 @@ export async function deleteUserPlan(): Promise<void> {
   } catch (error) {
     console.error("❌ Failed to delete user plan:", error);
     throw new Error("Failed to delete user plan from storage");
-  }
-}
-
-// =============================================================================
-// FORECAST CONFIGURATION PERSISTENCE
-// =============================================================================
-
-/**
- * Save forecast configuration to localStorage
- */
-export async function saveForecastConfig(config: {
-  startingBalance: number;
-  selectedYear: number;
-}): Promise<void> {
-  if (!isLocalStorageAvailable()) {
-    throw new Error("localStorage is not available");
-  }
-
-  try {
-    const serialized = safeJsonStringify(config);
-    if (!serialized) {
-      throw new Error("Failed to serialize forecast config");
-    }
-
-    window.localStorage.setItem(STORAGE_KEYS.FORECAST_CONFIG, serialized);
-    console.log("✅ Forecast config saved successfully");
-  } catch (error) {
-    console.error("❌ Failed to save forecast config:", error);
-    throw new Error("Failed to save forecast config to storage");
-  }
-}
-
-/**
- * Load forecast configuration from localStorage
- */
-export async function loadForecastConfig(): Promise<{
-  startingBalance: number;
-  selectedYear: number;
-} | null> {
-  if (!isLocalStorageAvailable()) {
-    console.warn("localStorage is not available");
-    return null;
-  }
-
-  try {
-    const data = window.localStorage.getItem(STORAGE_KEYS.FORECAST_CONFIG);
-
-    if (!data) {
-      console.log("No saved forecast config found");
-      return null;
-    }
-
-    const config = safeJsonParse<{
-      startingBalance: number;
-      selectedYear: number;
-    } | null>(data, null);
-
-    if (
-      !config ||
-      typeof config.startingBalance !== "number" ||
-      typeof config.selectedYear !== "number"
-    ) {
-      console.warn("Invalid forecast config data found in storage");
-      return null;
-    }
-
-    console.log("✅ Forecast config loaded successfully");
-    return config;
-  } catch (error) {
-    console.error("❌ Failed to load forecast config:", error);
-    return null;
   }
 }
 

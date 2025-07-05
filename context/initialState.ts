@@ -105,12 +105,6 @@ export const initialFinancialState: FinancialState = {
   // Computed data
   financialSummary: initialFinancialSummary,
 
-  // Forecast configuration
-  forecastConfig: {
-    startingBalance: 0,
-    selectedYear: new Date().getFullYear(),
-  },
-
   // UI state
   loading: initialLoadingState,
   error: initialErrorState,
@@ -166,10 +160,6 @@ export function mergeWithInitialState(
     userPlan: {
       ...initialUserPlan,
       ...partialState.userPlan,
-    },
-    forecastConfig: {
-      ...initialFinancialState.forecastConfig,
-      ...partialState.forecastConfig,
     },
     loading: {
       ...initialLoadingState,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useFinancialState, useFinancialContext } from "@/context";
+import { useFinancialState } from "@/context";
 import {
   generateForecast,
   ForecastConfig,
@@ -12,64 +12,13 @@ import { formatCurrency } from "@/utils/currency";
 
 export default function ForecastPage() {
   const state = useFinancialState();
-  const { updateForecastStartingBalance, updateForecastSelectedYear } =
-    useFinancialContext();
   const [config, setConfig] = useState<ForecastConfig>({
     ...DEFAULT_FORECAST_CONFIG,
-    startingBalance:
-      state.forecastConfig?.startingBalance ||
-      state.userPlan?.currentBalance ||
-      0,
+    startingBalance: state.userPlan?.currentBalance || 0,
   });
   const [selectedView, setSelectedView] = useState<"table" | "chart" | "goals">(
     "table"
   );
-
-  // Handle starting balance update
-  const handleStartingBalanceChange = async (newBalance: number) => {
-    setConfig((prev) => ({ ...prev, startingBalance: newBalance }));
-    try {
-      await updateForecastStartingBalance(newBalance);
-    } catch (error) {
-      console.error("Failed to save starting balance:", error);
-    }
-  };
-
-  // Handle year selection change
-  const handleYearChange = async (newYear: number) => {
-    setConfig((prev) => ({
-      ...prev,
-      startDate: new Date(newYear, 0, 1), // January 1st of selected year
-    }));
-    try {
-      await updateForecastSelectedYear(newYear);
-    } catch (error) {
-      console.error("Failed to save selected year:", error);
-    }
-  };
-
-  // Handle reset to defaults
-  const handleResetToDefaults = async () => {
-    const defaultConfig = {
-      ...DEFAULT_FORECAST_CONFIG,
-      startingBalance: state.userPlan?.currentBalance || 0,
-    };
-    setConfig(defaultConfig);
-
-    try {
-      await updateForecastStartingBalance(defaultConfig.startingBalance);
-      await updateForecastSelectedYear(new Date().getFullYear());
-    } catch (error) {
-      console.error("Failed to reset configuration:", error);
-    }
-  };
-
-  // Get available years (current year and next 2 years)
-  const currentYear = new Date().getFullYear();
-  const availableYears = [currentYear, currentYear + 1, currentYear + 2];
-  const selectedYear = config.startDate
-    ? config.startDate.getFullYear()
-    : currentYear;
 
   // Generate forecast when data or config changes
   const forecastResult: ForecastResult = useMemo(() => {
@@ -155,16 +104,20 @@ export default function ForecastPage() {
                     e.target.value === "0" && (e.target.value = "")
                   }
                   onChange={(e) =>
-                    handleStartingBalanceChange(parseFloat(e.target.value) || 0)
+                    setConfig({
+                      ...config,
+                      startingBalance: parseFloat(e.target.value) || 0,
+                    })
                   }
                   className="w-32 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-sm"
                   placeholder="0.00"
                 />
                 <button
                   onClick={() =>
-                    handleStartingBalanceChange(
-                      state.userPlan?.currentBalance || 0
-                    )
+                    setConfig({
+                      ...config,
+                      startingBalance: state.userPlan?.currentBalance || 0,
+                    })
                   }
                   className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                   title="Reset to current balance"
@@ -204,22 +157,6 @@ export default function ForecastPage() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Year
-              </label>
-              <select
-                value={selectedYear}
-                onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              >
-                {availableYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year} {year === currentYear && "(Current)"}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Months
               </label>
               <select
@@ -233,28 +170,6 @@ export default function ForecastPage() {
                 <option value={12}>12 months</option>
                 <option value={24}>24 months</option>
               </select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleResetToDefaults}
-                className="px-4 py-2 text-sm bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors flex items-center gap-2"
-                title="Reset all forecast settings to defaults"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                Reset
-              </button>
             </div>
           </div>
         </div>
@@ -527,16 +442,31 @@ export default function ForecastPage() {
           <div className="h-64 flex items-end justify-between space-x-2">
             {forecastResult.monthlyForecasts.map((month) => {
               const maxBalance = Math.max(
-                ...forecastResult.monthlyForecasts.map((m) => m.endingBalance)
+                ...forecastResult.monthlyForecasts.map((m) => m.endingBalance),
+                0 // Ensure we include zero as a reference point
               );
               const minBalance = Math.min(
-                ...forecastResult.monthlyForecasts.map((m) => m.endingBalance)
+                ...forecastResult.monthlyForecasts.map((m) => m.endingBalance),
+                0 // Ensure we include zero as a reference point
               );
-              const range = maxBalance - minBalance;
-              const height =
-                range > 0
-                  ? ((month.endingBalance - minBalance) / range) * 100
-                  : 50;
+
+              // Calculate the range and ensure we have a reasonable scale
+              const range = Math.max(maxBalance - minBalance, 1000); // Minimum range of 1000
+              const zeroPoint = Math.abs(minBalance) / range; // Where zero line should be
+
+              // Calculate height as percentage from bottom
+              let height: number;
+              if (month.endingBalance >= 0) {
+                // Positive balance: height from zero line upward
+                height = (month.endingBalance / range) * 100;
+              } else {
+                // Negative balance: height from bottom to zero line
+                height =
+                  ((Math.abs(minBalance) + month.endingBalance) / range) * 100;
+              }
+
+              // Ensure minimum visible height
+              height = Math.max(height, 2);
 
               return (
                 <div
@@ -547,16 +477,35 @@ export default function ForecastPage() {
                     className="w-full bg-gray-200 dark:bg-gray-700 rounded-t relative"
                     style={{ height: "200px" }}
                   >
+                    {/* Zero line indicator */}
+                    {minBalance < 0 && (
+                      <div
+                        className="absolute w-full border-t-2 border-gray-400 dark:border-gray-500 border-dashed"
+                        style={{ bottom: `${zeroPoint * 100}%` }}
+                      />
+                    )}
+
+                    {/* Balance bar */}
                     <div
                       className={`absolute bottom-0 w-full rounded-t transition-all duration-300 ${
                         month.endingBalance >= 0
                           ? "bg-green-500 dark:bg-green-400"
                           : "bg-red-500 dark:bg-red-400"
                       }`}
-                      style={{ height: `${Math.max(height, 5)}%` }}
+                      style={{ height: `${height}%` }}
                       title={`${formatMonth(month.month)}: ${formatCurrency(
                         month.endingBalance
                       )}`}
+                    />
+
+                    {/* Net change indicator */}
+                    <div
+                      className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                        month.netChange >= 0
+                          ? "bg-green-600 dark:bg-green-300"
+                          : "bg-red-600 dark:bg-red-300"
+                      }`}
+                      title={`Net change: ${formatCurrency(month.netChange)}`}
                     />
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
@@ -571,8 +520,34 @@ export default function ForecastPage() {
               Low: {formatCurrency(forecastResult.summary.lowestBalance)}
             </span>
             <span>
+              Avg Net:{" "}
+              {formatCurrency(forecastResult.summary.averageMonthlyNet)}
+            </span>
+            <span>
               High: {formatCurrency(forecastResult.summary.highestBalance)}
             </span>
+          </div>
+
+          {/* Chart Legend */}
+          <div className="mt-4 flex justify-center space-x-6 text-sm">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 dark:bg-green-400 rounded mr-2"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                Positive Balance
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 dark:bg-red-400 rounded mr-2"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                Negative Balance
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-gray-400 dark:bg-gray-500 rounded mr-2"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                Zero Line
+              </span>
+            </div>
           </div>
         </div>
       )}

@@ -7,7 +7,6 @@ import {
   ExpenseCategory,
   Priority,
   GoalCategory,
-  GoalType,
 } from "@/types";
 import { ExportData } from "./dataExport";
 
@@ -266,7 +265,7 @@ function parseIncomeFromCSV(
       if (incomeItem.name) {
         income.push(incomeItem);
       }
-    } catch {
+    } catch (error) {
       result?.warnings.push(`Failed to parse income row: ${row.join(",")}`);
     }
   }
@@ -323,7 +322,7 @@ function parseExpensesFromCSV(
       if (expenseItem.name) {
         expenses.push(expenseItem);
       }
-    } catch {
+    } catch (error) {
       result?.warnings.push(`Failed to parse expense row: ${row.join(",")}`);
     }
   }
@@ -368,9 +367,6 @@ function parseGoalsFromCSV(
           (row[columnMap.Category] as GoalCategory) || GoalCategory.OTHER,
         priority: (row[columnMap.Priority] as Priority) || Priority.MEDIUM,
         isActive: parseBoolean(row[columnMap["Is Active"]]),
-        goalType:
-          (row[columnMap["Goal Type"]] as GoalType) || GoalType.FIXED_AMOUNT,
-        priorityOrder: parseInt(row[columnMap["Priority Order"]]) || 1,
         createdAt: row[columnMap["Created At"]] || new Date().toISOString(),
         updatedAt: row[columnMap["Updated At"]] || new Date().toISOString(),
       };
@@ -378,7 +374,7 @@ function parseGoalsFromCSV(
       if (goalItem.name && goalItem.targetAmount > 0) {
         goals.push(goalItem);
       }
-    } catch {
+    } catch (error) {
       result?.warnings.push(`Failed to parse goal row: ${row.join(",")}`);
     }
   }
@@ -464,7 +460,7 @@ function parseBoolean(value: string): boolean {
 /**
  * Validate imported user plan data
  */
-function validateImportedUserPlan(userPlan: unknown): {
+function validateImportedUserPlan(userPlan: any): {
   isValid: boolean;
   errors: string[];
 } {
@@ -475,31 +471,28 @@ function validateImportedUserPlan(userPlan: unknown): {
     return { isValid: false, errors };
   }
 
-  // Cast to any for validation
-  const plan = userPlan as any;
-
   // Validate required fields
-  if (!plan.id) {
+  if (!userPlan.id) {
     errors.push("User plan ID is missing");
   }
 
   // Validate arrays exist
-  if (!Array.isArray(plan.income)) {
-    plan.income = [];
+  if (!Array.isArray(userPlan.income)) {
+    userPlan.income = [];
   }
-  if (!Array.isArray(plan.expenses)) {
-    plan.expenses = [];
+  if (!Array.isArray(userPlan.expenses)) {
+    userPlan.expenses = [];
   }
-  if (!Array.isArray(plan.goals)) {
-    plan.goals = [];
+  if (!Array.isArray(userPlan.goals)) {
+    userPlan.goals = [];
   }
-  if (!Array.isArray(plan.forecast)) {
-    plan.forecast = [];
+  if (!Array.isArray(userPlan.forecast)) {
+    userPlan.forecast = [];
   }
 
   // Validate numeric fields
-  if (typeof plan.currentBalance !== "number") {
-    plan.currentBalance = 0;
+  if (typeof userPlan.currentBalance !== "number") {
+    userPlan.currentBalance = 0;
   }
 
   return { isValid: errors.length === 0, errors };

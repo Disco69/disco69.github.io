@@ -73,7 +73,7 @@ export const sampleGoal: Goal = {
   targetAmount: 25000,
   targetDate: "2024-12-31",
   currentAmount: 5000,
-  description: "Build emergency fund for 6 months expenses",
+  description: "6 months of expenses for emergency situations",
   category: GoalCategory.EMERGENCY_FUND,
   priority: Priority.HIGH,
   isActive: true,

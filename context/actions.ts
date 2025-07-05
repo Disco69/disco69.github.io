@@ -38,8 +38,6 @@ import {
   MarkSavedAction,
   FinancialState,
   ErrorState,
-  UpdateForecastStartingBalanceAction,
-  UpdateForecastSelectedYearAction,
 } from "./types";
 import { Income, Expense, Goal, Forecast, UserPlan } from "../types";
 
@@ -296,26 +294,6 @@ export const updateCurrentBalance = (
 ): UpdateCurrentBalanceAction => ({
   type: FinancialActionType.UPDATE_CURRENT_BALANCE,
   payload: balance,
-});
-
-/**
- * Update the forecast starting balance
- */
-export const updateForecastStartingBalance = (
-  balance: number
-): UpdateForecastStartingBalanceAction => ({
-  type: FinancialActionType.UPDATE_FORECAST_STARTING_BALANCE,
-  payload: balance,
-});
-
-/**
- * Update the forecast selected year
- */
-export const updateForecastSelectedYear = (
-  year: number
-): UpdateForecastSelectedYearAction => ({
-  type: FinancialActionType.UPDATE_FORECAST_SELECTED_YEAR,
-  payload: year,
 });
 
 // =============================================================================

@@ -7,6 +7,10 @@ import { Frequency, ExpenseCategory, GoalCategory, Priority } from "@/types";
 import { getHighPrioritySuggestions } from "@/utils/suggestionGenerator";
 import { formatCurrency } from "@/utils/currency";
 import { isIncomeActiveInMonth } from "@/utils/forecastCalculator";
+import IncomeVsExpensesChart from "@/components/charts/IncomeVsExpensesChart";
+import GoalProgressChart from "@/components/charts/GoalProgressChart";
+import ExpenseCategoryChart from "@/components/charts/ExpenseCategoryChart";
+import AskAIButton from "@/components/AskAIButton";
 
 export default function DashboardPage() {
   const state = useFinancialState();
@@ -14,7 +18,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadUserPlan();
-  }, [loadUserPlan]);
+  }, []); // Empty dependency array since loadUserPlan is memoized
 
   // Calculate financial metrics
   const calculateMonthlyAmount = (amount: number, frequency: Frequency) => {
@@ -196,9 +200,12 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-          Financial Dashboard
-        </h1>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+            Financial Dashboard
+          </h1>
+          <AskAIButton />
+        </div>
         <p className="mt-2 text-xl text-gray-600 dark:text-gray-300">
           Your complete financial overview at a glance
         </p>
@@ -352,6 +359,21 @@ export default function DashboardPage() {
             {formatCurrency(totalGoalTarget)}
           </p>
         </div>
+      </div>
+
+      {/* Advanced Charts Section */}
+      <div className="space-y-8">
+        {/* Income vs Expenses Trend Chart */}
+        <IncomeVsExpensesChart
+          userPlan={state.userPlan}
+          className="shadow-sm"
+        />
+
+        {/* Goal Progress Chart */}
+        <GoalProgressChart userPlan={state.userPlan} className="shadow-sm" />
+
+        {/* Expense Category Chart */}
+        <ExpenseCategoryChart userPlan={state.userPlan} className="shadow-sm" />
       </div>
 
       {/* Charts and Progress Section */}

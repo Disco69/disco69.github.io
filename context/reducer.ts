@@ -409,7 +409,12 @@ export function financialReducer(
       };
 
     case FinancialActionType.LOAD_SUCCESS:
-      return updateStateWithUserPlan(state, action.payload);
+      return {
+        ...updateStateWithUserPlan(state, action.payload),
+        loading: { ...state.loading, isLoading: false },
+        error: { ...state.error, generalError: null },
+        hasUnsavedChanges: false, // Just loaded, so no unsaved changes
+      };
 
     case FinancialActionType.LOAD_ERROR:
       return {
@@ -432,6 +437,7 @@ export function financialReducer(
       };
 
     default:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       console.warn("Unknown action type:", (action as any).type);
       return state;
   }

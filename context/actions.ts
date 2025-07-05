@@ -28,6 +28,7 @@ import {
   SetGoalListAction,
   SetForecastAction,
   RegenerateForecastAction,
+  UpdateForecastConfigAction,
   SetUserPlanAction,
   UpdateCurrentBalanceAction,
   SaveSuccessAction,
@@ -39,7 +40,14 @@ import {
   FinancialState,
   ErrorState,
 } from "./types";
-import { Income, Expense, Goal, Forecast, UserPlan } from "../types";
+import {
+  Income,
+  Expense,
+  Goal,
+  Forecast,
+  UserPlan,
+  ForecastConfig,
+} from "../types";
 
 // =============================================================================
 // STATE INITIALIZATION ACTION CREATORS
@@ -272,6 +280,16 @@ export const setForecast = (forecast: Forecast[]): SetForecastAction => ({
  */
 export const regenerateForecast = (): RegenerateForecastAction => ({
   type: FinancialActionType.REGENERATE_FORECAST,
+});
+
+/**
+ * Update forecast configuration
+ */
+export const updateForecastConfig = (
+  config: Partial<ForecastConfig>
+): UpdateForecastConfigAction => ({
+  type: FinancialActionType.UPDATE_FORECAST_CONFIG,
+  payload: config,
 });
 
 // =============================================================================

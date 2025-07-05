@@ -9,6 +9,7 @@ import { FinancialState, LoadingState, ErrorState } from "./types";
 import {
   UserPlan,
   FinancialSummary,
+  ForecastConfig,
   ExpenseCategory,
   GoalCategory,
 } from "../types";
@@ -16,6 +17,18 @@ import {
 // =============================================================================
 // INITIAL STATE DEFINITIONS
 // =============================================================================
+
+/**
+ * Default forecast configuration
+ */
+export const initialForecastConfig: ForecastConfig = {
+  startingBalance: 0,
+  startDate: new Date().toISOString().slice(0, 7), // Current month (YYYY-MM)
+  months: 12,
+  includeGoalContributions: true,
+  conservativeMode: false,
+  updatedAt: new Date().toISOString(),
+};
 
 /**
  * Initial loading state - all loading flags set to false
@@ -50,6 +63,7 @@ export const initialUserPlan: UserPlan = {
   goals: [],
   forecast: [],
   currentBalance: 0,
+  forecastConfig: initialForecastConfig,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -183,17 +197,20 @@ export function mergeWithInitialState(
 /**
  * Validate that a state object has all required properties
  */
-export function validateState(state: any): state is FinancialState {
+export function validateState(state: unknown): state is FinancialState {
   try {
     return (
       state &&
       typeof state === "object" &&
-      state.userPlan &&
-      state.financialSummary &&
-      state.loading &&
-      state.error &&
-      typeof state.lastUpdated === "string" &&
-      typeof state.hasUnsavedChanges === "boolean"
+      state !== null &&
+      "userPlan" in state &&
+      "financialSummary" in state &&
+      "loading" in state &&
+      "error" in state &&
+      "lastUpdated" in state &&
+      typeof (state as any).lastUpdated === "string" &&
+      "hasUnsavedChanges" in state &&
+      typeof (state as any).hasUnsavedChanges === "boolean"
     );
   } catch {
     return false;
@@ -203,9 +220,9 @@ export function validateState(state: any): state is FinancialState {
 /**
  * Get a safe state object, falling back to initial state if invalid
  */
-export function getSafeState(potentialState: any): FinancialState {
+export function getSafeState(potentialState: unknown): FinancialState {
   if (validateState(potentialState)) {
-    return potentialState;
+    return potentialState as FinancialState;
   }
 
   console.warn("Invalid state detected, falling back to initial state");

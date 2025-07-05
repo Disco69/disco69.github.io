@@ -280,6 +280,13 @@ export function calculateSmartGoalAllocations(
     );
   }
 
+  // Calculate balance-based allocation multiplier
+  // Higher balances allow for more aggressive goal allocation
+  const balanceMultiplier = Math.min(
+    2.0,
+    Math.max(1.0, availableSurplus / 10000)
+  ); // Scale based on surplus amount
+
   for (const goal of activeGoals) {
     if (remainingSurplus <= 0) break;
 
@@ -311,30 +318,35 @@ export function calculateSmartGoalAllocations(
 
       // If target date is in the past, use aggressive allocation
       if (targetDate < currentMonth) {
-        // Allocate up to 50% of remaining surplus for overdue goals
-        requiredAmount = Math.min(remainingAmount, remainingSurplus * 0.5);
+        // Allocate up to 60% of remaining surplus for overdue goals (increased from 50%)
+        requiredAmount = Math.min(
+          remainingAmount,
+          remainingSurplus * 0.6 * balanceMultiplier
+        );
       } else {
         // Calculate required monthly contribution
         const monthlyRequired = remainingAmount / monthsUntilTarget;
 
         // Don't allocate more than needed for this month, but ensure minimum progress
+        // Increase base allocation when balance is higher
+        const minAllocationPercent = Math.min(0.2, 0.1 * balanceMultiplier); // 10-20% based on balance
         requiredAmount = Math.min(
           remainingAmount,
-          Math.max(monthlyRequired, remainingSurplus * 0.1) // At least 10% of surplus
+          Math.max(monthlyRequired, remainingSurplus * minAllocationPercent)
         );
       }
     } else {
       // For open-ended goals, allocate based on priority and available surplus
-      // Use a percentage of remaining surplus based on priority
+      // Use a percentage of remaining surplus based on priority and balance
       const priorityMultiplier = getPriorityMultiplier(goal.priority);
-      const baseAllocation = remainingSurplus * 0.15; // Base 15% allocation
+      const baseAllocation = remainingSurplus * 0.15 * balanceMultiplier; // Scale with balance
       requiredAmount = baseAllocation * priorityMultiplier;
     }
 
-    // Apply priority-based minimum allocation
+    // Apply priority-based minimum allocation with balance consideration
     const priorityMultiplier = getPriorityMultiplier(goal.priority);
     const minimumAllocation = Math.min(
-      remainingSurplus * 0.05 * priorityMultiplier,
+      remainingSurplus * 0.05 * priorityMultiplier * balanceMultiplier,
       remainingSurplus
     );
 
@@ -355,7 +367,11 @@ export function calculateSmartGoalAllocations(
       // Add debug logging
       if (process.env.NODE_ENV === "development") {
         console.log(
-          `Allocated ${allocation} to goal ${goal.name}, remaining surplus: ${remainingSurplus}`
+          `Allocated ${allocation} to goal ${
+            goal.name
+          } (balance multiplier: ${balanceMultiplier.toFixed(
+            2
+          )}), remaining surplus: ${remainingSurplus}`
         );
       }
     }

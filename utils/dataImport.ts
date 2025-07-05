@@ -7,8 +7,10 @@ import {
   ExpenseCategory,
   Priority,
   GoalCategory,
+  GoalType,
 } from "@/types";
 import { ExportData } from "./dataExport";
+import { initialForecastConfig } from "../context/initialState";
 
 /**
  * Import result interface
@@ -495,6 +497,11 @@ function validateImportedUserPlan(userPlan: any): {
     userPlan.currentBalance = 0;
   }
 
+  // Validate or add forecast configuration
+  if (!userPlan.forecastConfig) {
+    userPlan.forecastConfig = { ...initialForecastConfig };
+  }
+
   return { isValid: errors.length === 0, errors };
 }
 
@@ -512,6 +519,10 @@ function sanitizeUserPlan(userPlan: UserPlan): UserPlan {
     goals: userPlan.goals || [],
     forecast: userPlan.forecast || [],
     currentBalance: userPlan.currentBalance || 0,
+    forecastConfig: userPlan.forecastConfig || {
+      ...initialForecastConfig,
+      startingBalance: userPlan.currentBalance || 0,
+    },
     createdAt: userPlan.createdAt || now,
     updatedAt: now, // Always update the timestamp on import
   };

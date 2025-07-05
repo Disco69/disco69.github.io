@@ -166,6 +166,29 @@ export interface Expense {
 }
 
 /**
+ * Configuration for forecast generation and display
+ */
+export interface ForecastConfig {
+  /** Starting balance for forecast calculations */
+  startingBalance: number;
+
+  /** Start date for forecast (ISO 8601 format) - defaults to current month */
+  startDate: string;
+
+  /** Number of months to forecast */
+  months: number;
+
+  /** Whether to include goal contributions in projections */
+  includeGoalContributions: boolean;
+
+  /** Conservative mode reduces income by 10% and increases expenses by 10% */
+  conservativeMode: boolean;
+
+  /** When this configuration was last updated */
+  updatedAt: string;
+}
+
+/**
  * Represents a financial goal
  */
 export interface Goal {
@@ -246,7 +269,7 @@ export interface Forecast {
 // =============================================================================
 
 /**
- * Represents a complete user financial plan
+ * Complete user financial plan
  */
 export interface UserPlan {
   /** Unique identifier for the user plan */
@@ -266,6 +289,9 @@ export interface UserPlan {
 
   /** Current total balance */
   currentBalance: number;
+
+  /** Forecast configuration settings */
+  forecastConfig: ForecastConfig;
 
   /** When this plan was created */
   createdAt: string;

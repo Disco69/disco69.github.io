@@ -1,24 +1,106 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useFinancialState } from "@/context";
+import React, { useState, useMemo, useEffect } from "react";
+import { useFinancialContext } from "@/context";
 import {
   generateForecast,
-  ForecastConfig,
+  ForecastConfig as UtilsForecastConfig,
   ForecastResult,
-  DEFAULT_FORECAST_CONFIG,
 } from "@/utils/forecastCalculator";
 import { formatCurrency } from "@/utils/currency";
+import { ForecastConfig } from "@/types";
 
 export default function ForecastPage() {
-  const state = useFinancialState();
-  const [config, setConfig] = useState<ForecastConfig>({
-    ...DEFAULT_FORECAST_CONFIG,
-    startingBalance: state.userPlan?.currentBalance || 0,
-  });
+  const { state, updateForecastConfig, saveUserPlan } = useFinancialContext();
+  const [localConfig, setLocalConfig] = useState<ForecastConfig>(
+    state.userPlan?.forecastConfig || {
+      startingBalance: state.userPlan?.currentBalance || 0,
+      startDate: new Date().toISOString().slice(0, 7),
+      months: 12,
+      includeGoalContributions: true,
+      conservativeMode: false,
+      updatedAt: new Date().toISOString(),
+    }
+  );
   const [selectedView, setSelectedView] = useState<"table" | "chart" | "goals">(
     "table"
   );
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [isAutoRecalculating, setIsAutoRecalculating] = useState(false);
+
+  // Convert persistent config to utils config
+  const convertToUtilsConfig = (
+    config: ForecastConfig
+  ): UtilsForecastConfig => {
+    return {
+      months: config.months,
+      startingBalance: config.startingBalance,
+      startDate: config.startDate
+        ? new Date(config.startDate + "-01")
+        : undefined,
+      includeGoalContributions: config.includeGoalContributions,
+      conservativeMode: config.conservativeMode,
+    };
+  };
+
+  // Sync local config with context when userPlan changes
+  useEffect(() => {
+    if (state.userPlan?.forecastConfig) {
+      setLocalConfig(state.userPlan.forecastConfig);
+    }
+  }, [state.userPlan?.forecastConfig]);
+
+  // Update forecast configuration in context
+  const updateConfig = async (newConfig: Partial<ForecastConfig>) => {
+    const updatedConfig = { ...localConfig, ...newConfig };
+    setLocalConfig(updatedConfig);
+
+    try {
+      setIsRecalculating(true);
+      await updateForecastConfig(updatedConfig);
+    } catch (error) {
+      console.error("Failed to update forecast config:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
+  // Manual recalculate function
+  const handleRecalculate = async () => {
+    try {
+      setIsRecalculating(true);
+      await updateForecastConfig({
+        ...localConfig,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to recalculate forecast:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
+  // Reset all forecast configuration to defaults
+  const handleResetAll = async () => {
+    try {
+      setIsRecalculating(true);
+      setShowResetConfirmation(false);
+      const defaultConfig: ForecastConfig = {
+        startingBalance: state.userPlan?.currentBalance || 0,
+        startDate: new Date().toISOString().slice(0, 7),
+        months: 12,
+        includeGoalContributions: true,
+        conservativeMode: false,
+        updatedAt: new Date().toISOString(),
+      };
+      await updateForecastConfig(defaultConfig);
+    } catch (error) {
+      console.error("Failed to reset forecast config:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
 
   // Generate forecast when data or config changes
   const forecastResult: ForecastResult = useMemo(() => {
@@ -40,8 +122,15 @@ export default function ForecastPage() {
         goalProgress: [],
       };
 
-    return generateForecast(state.userPlan, config);
-  }, [state.userPlan, config]);
+    return generateForecast(state.userPlan, convertToUtilsConfig(localConfig));
+  }, [state.userPlan, localConfig]);
+
+  // Auto-recalculation effect
+  useEffect(() => {
+    setIsAutoRecalculating(true);
+    const timer = setTimeout(() => setIsAutoRecalculating(false), 500);
+    return () => clearTimeout(timer);
+  }, [localConfig]);
 
   const formatMonth = (monthKey: string) => {
     const date = new Date(monthKey + "-01");
@@ -49,6 +138,17 @@ export default function ForecastPage() {
       year: "numeric",
       month: "long",
     });
+  };
+
+  const getForecastDateRange = () => {
+    const startDate = new Date(localConfig.startDate + "-01");
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + localConfig.months - 1);
+
+    return {
+      start: formatMonth(localConfig.startDate),
+      end: formatMonth(endDate.toISOString().slice(0, 7)),
+    };
   };
 
   const getBalanceColor = (balance: number) => {
@@ -84,8 +184,36 @@ export default function ForecastPage() {
               📈 Financial Forecast
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-300">
-              12-month financial projections based on your current income,
-              expenses, and goals
+              Financial projections based on your current income, expenses, and
+              goals. Choose your start date and forecast period.
+            </p>
+            <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+              Forecast period: {getForecastDateRange().start} to{" "}
+              {getForecastDateRange().end}
+              {isAutoRecalculating && (
+                <span className="ml-2 inline-flex items-center">
+                  <svg
+                    className="animate-spin h-3 w-3 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Recalculating...
+                </span>
+              )}
             </p>
           </div>
 
@@ -99,13 +227,12 @@ export default function ForecastPage() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={config.startingBalance || ""}
+                  value={localConfig.startingBalance || ""}
                   onFocus={(e) =>
                     e.target.value === "0" && (e.target.value = "")
                   }
                   onChange={(e) =>
-                    setConfig({
-                      ...config,
+                    updateConfig({
                       startingBalance: parseFloat(e.target.value) || 0,
                     })
                   }
@@ -114,8 +241,7 @@ export default function ForecastPage() {
                 />
                 <button
                   onClick={() =>
-                    setConfig({
-                      ...config,
+                    updateConfig({
                       startingBalance: state.userPlan?.currentBalance || 0,
                     })
                   }
@@ -123,6 +249,35 @@ export default function ForecastPage() {
                   title="Reset to current balance"
                 >
                   Reset
+                </button>
+                <button
+                  onClick={handleRecalculate}
+                  disabled={isRecalculating}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Recalculate forecast"
+                >
+                  {isRecalculating ? "Calculating..." : "Recalculate"}
+                </button>
+                <button
+                  onClick={() => setShowResetConfirmation(true)}
+                  className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                  title="Reset all forecast settings to defaults"
+                >
+                  Reset All
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await saveUserPlan();
+                      alert("Forecast configuration saved successfully!");
+                    } catch {
+                      alert("Failed to save forecast configuration");
+                    }
+                  }}
+                  className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  title="Save current forecast configuration"
+                >
+                  Save Config
                 </button>
               </div>
             </div>
@@ -132,12 +287,43 @@ export default function ForecastPage() {
               </label>
               <input
                 type="checkbox"
-                checked={config.conservativeMode}
+                checked={localConfig.conservativeMode}
                 onChange={(e) =>
-                  setConfig({ ...config, conservativeMode: e.target.checked })
+                  updateConfig({
+                    conservativeMode: e.target.checked,
+                  })
                 }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Start Date
+              </label>
+              <div className="flex items-center space-x-1">
+                <input
+                  type="month"
+                  value={localConfig.startDate}
+                  onChange={(e) =>
+                    updateConfig({
+                      startDate: e.target.value,
+                    })
+                  }
+                  className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                  title="Select forecast start month"
+                />
+                <button
+                  onClick={() =>
+                    updateConfig({
+                      startDate: new Date().toISOString().slice(0, 7),
+                    })
+                  }
+                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                  title="Reset to current month"
+                >
+                  Now
+                </button>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -145,10 +331,9 @@ export default function ForecastPage() {
               </label>
               <input
                 type="checkbox"
-                checked={config.includeGoalContributions}
+                checked={localConfig.includeGoalContributions}
                 onChange={(e) =>
-                  setConfig({
-                    ...config,
+                  updateConfig({
                     includeGoalContributions: e.target.checked,
                   })
                 }
@@ -157,18 +342,24 @@ export default function ForecastPage() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Months
+                Forecast Period
               </label>
               <select
-                value={config.months}
+                value={localConfig.months}
                 onChange={(e) =>
-                  setConfig({ ...config, months: parseInt(e.target.value) })
+                  updateConfig({
+                    months: parseInt(e.target.value),
+                  })
                 }
                 className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               >
                 <option value={6}>6 months</option>
-                <option value={12}>12 months</option>
-                <option value={24}>24 months</option>
+                <option value={12}>1 year (12 months)</option>
+                <option value={18}>1.5 years (18 months)</option>
+                <option value={24}>2 years (24 months)</option>
+                <option value={36}>3 years (36 months)</option>
+                <option value={48}>4 years (48 months)</option>
+                <option value={60}>5 years (60 months)</option>
               </select>
             </div>
           </div>
@@ -214,7 +405,7 @@ export default function ForecastPage() {
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            After {config.months} months
+            After {localConfig.months} months
           </p>
         </div>
 
@@ -648,6 +839,38 @@ export default function ForecastPage() {
                 negative balance. Consider adjusting your expenses or increasing
                 income.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md mx-4">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Reset Forecast Configuration
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">
+              Are you sure you want to reset all forecast settings to defaults?
+              This will restore starting balance to current balance, reset start
+              date to current month, and restore other settings to their default
+              values.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowResetConfirmation(false)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetAll}
+                disabled={isRecalculating}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isRecalculating ? "Resetting..." : "Reset All"}
+              </button>
             </div>
           </div>
         </div>

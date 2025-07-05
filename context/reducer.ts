@@ -5,26 +5,13 @@
  * for the financial planning application. It processes actions and returns new state.
  */
 
+import { FinancialState, FinancialAction, FinancialActionType } from "./types";
 import {
-  FinancialState,
-  FinancialAction,
-  FinancialActionType,
-  LoadingState,
-  ErrorState,
-} from "./types";
-import {
-  initialFinancialState,
-  initialLoadingState,
   initialErrorState,
   createFreshInitialState,
   mergeWithInitialState,
-  getSafeState,
 } from "./initialState";
 import {
-  Income,
-  Expense,
-  Goal,
-  Forecast,
   UserPlan,
   FinancialSummary,
   ExpenseCategory,
@@ -40,10 +27,6 @@ import {
  * Calculate financial summary from user plan data
  */
 function calculateFinancialSummary(userPlan: UserPlan): FinancialSummary {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
   // Calculate total monthly income
   const totalMonthlyIncome = userPlan.income
     .filter((income) => income.isActive)
@@ -388,6 +371,16 @@ export function financialReducer(
         ...state,
         loading: { ...state.loading, isLoadingForecast: true },
       };
+
+    case FinancialActionType.UPDATE_FORECAST_CONFIG:
+      return updateStateWithUserPlan(state, {
+        ...state.userPlan,
+        forecastConfig: {
+          ...state.userPlan.forecastConfig,
+          ...action.payload,
+          updatedAt: new Date().toISOString(),
+        },
+      });
 
     // UserPlan actions
     case FinancialActionType.SET_USER_PLAN:

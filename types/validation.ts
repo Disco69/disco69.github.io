@@ -24,6 +24,7 @@ import {
   FinancialSummary,
   MonthlySuggestion,
   GoalType,
+  ForecastConfig,
 } from "./index";
 
 // =============================================================================
@@ -108,6 +109,14 @@ export const sampleUserPlan: UserPlan = {
   goals: [sampleGoal],
   forecast: [sampleForecast],
   currentBalance: 12500,
+  forecastConfig: {
+    startingBalance: 12500,
+    startDate: "2024-01",
+    months: 12,
+    includeGoalContributions: true,
+    conservativeMode: false,
+    updatedAt: "2024-01-01T00:00:00Z",
+  },
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
 };

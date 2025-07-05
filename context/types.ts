@@ -18,6 +18,7 @@ import {
   UpdateExpenseInput,
   UpdateGoalInput,
   FinancialSummary,
+  ForecastConfig,
 } from "../types";
 
 // =============================================================================
@@ -115,6 +116,7 @@ export enum FinancialActionType {
   // Forecast actions
   SET_FORECAST = "SET_FORECAST",
   REGENERATE_FORECAST = "REGENERATE_FORECAST",
+  UPDATE_FORECAST_CONFIG = "UPDATE_FORECAST_CONFIG",
 
   // UserPlan actions
   SET_USER_PLAN = "SET_USER_PLAN",
@@ -270,6 +272,11 @@ export interface RegenerateForecastAction extends BaseAction {
   type: FinancialActionType.REGENERATE_FORECAST;
 }
 
+export interface UpdateForecastConfigAction extends BaseAction {
+  type: FinancialActionType.UPDATE_FORECAST_CONFIG;
+  payload: Partial<ForecastConfig>;
+}
+
 /**
  * UserPlan actions
  */
@@ -344,6 +351,7 @@ export type FinancialAction =
   | SetGoalListAction
   | SetForecastAction
   | RegenerateForecastAction
+  | UpdateForecastConfigAction
   | SetUserPlanAction
   | UpdateCurrentBalanceAction
   | SaveSuccessAction
@@ -385,6 +393,7 @@ export interface FinancialContextValue {
   // Utility functions
   regenerateForecast: () => Promise<void>;
   updateCurrentBalance: (balance: number) => Promise<void>;
+  updateForecastConfig: (config: Partial<ForecastConfig>) => Promise<void>;
   saveUserPlan: () => Promise<void>;
   loadUserPlan: () => Promise<void>;
   resetAll: () => void;

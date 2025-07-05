@@ -32,6 +32,7 @@ import {
   Income,
   Expense,
   Goal,
+  ForecastConfig,
 } from "../types";
 
 // =============================================================================
@@ -362,6 +363,27 @@ export function FinancialProvider({
     []
   );
 
+  const updateForecastConfig = useCallback(
+    async (config: Partial<ForecastConfig>): Promise<void> => {
+      try {
+        dispatch(actions.setLoadingForecast(true));
+        dispatch(actions.clearError("forecastError"));
+
+        dispatch(actions.updateForecastConfig(config));
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to update forecast config";
+        dispatch(actions.setForecastError(errorMessage));
+        throw error;
+      } finally {
+        dispatch(actions.setLoadingForecast(false));
+      }
+    },
+    []
+  );
+
   const saveUserPlan = useCallback(async (): Promise<void> => {
     try {
       dispatch(actions.setSaving(true));
@@ -428,6 +450,7 @@ export function FinancialProvider({
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
+    updateForecastConfig,
     saveUserPlan,
     loadUserPlan,
     resetAll,
@@ -463,6 +486,7 @@ export function useFinancialActions() {
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
+    updateForecastConfig,
     saveUserPlan,
     loadUserPlan,
     resetAll,
@@ -481,6 +505,7 @@ export function useFinancialActions() {
     deleteGoal,
     regenerateForecast,
     updateCurrentBalance,
+    updateForecastConfig,
     saveUserPlan,
     loadUserPlan,
     resetAll,

@@ -920,7 +920,7 @@
         "description": "Enhance the Forecast page by implementing a January-based timeline, persistent starting balance, improved UI/UX for balance management, multi-year forecasting, and state management with reset functionality.",
         "details": "This task focuses on a significant overhaul of the Forecast page's timeline and starting balance features.\n\n**1. January-Based Forecast Timeline:**\n*   Modify the forecast generation logic (likely within the utility function from Task 8) to always start the 12-month projection from January of the current year, regardless of the actual current month.\n*   Update the UI to reflect this January start, ensuring month labels and data align correctly.\n\n**2. Persistent Starting Balance:**\n*   Integrate the starting balance (from Task 15) with the global state management (Task 3) to ensure it persists across user sessions and page reloads.\n*   When the application loads, retrieve the saved starting balance and pre-populate the input field.\n\n**3. Improved UI/UX for Starting Balance:**\n*   Design and implement a more prominent and intuitive input mechanism for the starting balance. This could be a dedicated section in the Forecast page settings, a modal, or a clearly visible input field with a label like \"Starting Balance for January\".\n*   Consider adding inline help text or tooltips to explain the purpose of the starting balance.\n\n**4. Multi-Year Forecasting with Year Selection:**\n*   Extend the forecast calculation to support projections beyond 12 months, allowing for multi-year forecasts (e.g., 2, 3, or 5 years).\n*   Add a year selection dropdown or similar UI element on the Forecast page, enabling users to choose the number of years for the projection.\n*   Ensure the forecast calculations correctly extend income, expenses, and goal impacts over the selected multi-year period.\n\n**5. Proper State Management for Forecast Configuration:**\n*   Centralize the forecast configuration (e.g., starting month, number of years, starting balance) within the global state management (Task 3) to ensure consistency and easy access across components.\n*   When any of these configurations change, trigger a re-calculation and re-render of the forecast.\n\n**6. Reset Functionality for Starting Balance:**\n*   Implement a \"Reset\" button or similar control that allows users to revert the starting balance to a default value (e.g., 0 or the actual current balance if available).\n*   Ensure this reset action also updates the persistent storage and triggers a forecast recalculation.",
         "testStrategy": "**1. January Start Date Verification:**\n*   Navigate to the Forecast page in different months (e.g., March, July, November).\n*   Verify that the forecast timeline consistently starts from January of the current year.\n*   Check that the monthly projections correctly align with the January start.\n\n**2. Starting Balance Persistence Test:**\n*   Enter a starting balance value on the Forecast page.\n*   Navigate away from the Forecast page and then return, or refresh the browser.\n*   Verify that the entered starting balance is retained and displayed correctly.\n*   Close and reopen the application; confirm the starting balance persists.\n\n**3. UI/UX for Starting Balance:**\n*   Assess the new UI/UX for setting the starting balance. Is it intuitive, clearly labeled, and easy to use?\n*   Test various input values (positive, negative, zero) and ensure proper validation and display.\n\n**4. Multi-Year Forecasting:**\n*   Select different year ranges (e.g., 1 year, 2 years, 5 years) using the new year selection control.\n*   Verify that the forecast extends correctly for the selected duration.\n*   Manually check a few distant months/years in the multi-year forecast to ensure calculations remain accurate.\n\n**5. State Management and Recalculation:**\n*   Change the starting balance, year selection, or other forecast configurations.\n*   Verify that the forecast immediately recalculates and updates the display.\n*   Ensure no stale data is shown after configuration changes.\n\n**6. Reset Starting Balance:**\n*   Set a custom starting balance.\n*   Click the 'Reset' button.\n*   Verify that the starting balance reverts to its default value (e.g., 0) and the forecast updates accordingly.\n*   Confirm that the reset value is also persisted if the default is meant to be saved.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           8,
           15,
@@ -929,20 +929,11 @@
         "priority": "high",
         "subtasks": [
           {
-            "id": 1,
-            "title": "Modify Forecast to Start from January",
-            "description": "Change forecast generation to always begin from January instead of current month",
-            "details": "Update the forecast calculator to generate 12 months starting from January of the current year",
-            "status": "pending",
-            "dependencies": [],
-            "parentTaskId": 23
-          },
-          {
             "id": 2,
             "title": "Implement Persistent Starting Balance Storage",
             "description": "Add localStorage and context management for persistent starting balance",
             "details": "Store user's preferred starting balance and restore it on app reload",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 23
           },
@@ -951,7 +942,7 @@
             "title": "Create Improved Starting Balance UI",
             "description": "Design and implement better UI for setting and managing starting balance",
             "details": "Create a more prominent and user-friendly interface for starting balance input",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               2
             ],
@@ -962,7 +953,7 @@
             "title": "Add Year Selection for Multi-Year Forecasting",
             "description": "Implement year selection dropdown to enable multi-year forecasting capabilities",
             "details": "Allow users to view forecasts for different years (current, next year, etc.)",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               1
             ],
@@ -973,10 +964,43 @@
             "title": "Implement Reset Functionality",
             "description": "Add reset functionality to restore default starting balance",
             "details": "Provide users with option to reset to current balance from user plan",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               2,
               3
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 6,
+            "title": "Fix Starting Balance Impact on Goal Allocations and Add Manual Recalculate Button",
+            "description": "Fix the starting balance to have proper impact on goal allocation calculations and add manual recalculate functionality",
+            "details": "The starting balance should significantly impact goal allocation calculations, but currently it doesn't properly trigger recalculations. When users change the starting balance, the goal allocation logic should adjust accordingly.\n\nKey requirements:\n- Fix calculation logic to properly factor in starting balance for goal allocations\n- Add automatic recalculation when starting balance changes  \n- Add a manual \"Recalculate Forecast\" button on the forecast page\n- Ensure goal allocation logic considers starting balance in available cash calculations\n- Update smart goal allocation to be more responsive to balance changes\n- Add visual feedback during recalculation process\n\nThis is critical for forecast accuracy and user experience.",
+            "status": "done",
+            "dependencies": [
+              "23.2",
+              "23.3"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 7,
+            "title": "Implement Flexible Forecast Start Date Selection",
+            "description": "Add UI for users to select when they want their forecast to begin (default: current month)",
+            "details": "Instead of forcing forecast to start from January, implement a flexible start date selection feature where users can choose when they want their forecast to begin. Default to current month is fine, but users should be able to select any month/year as their forecast starting point. The forecast plan should build accordingly based on the selected start date.\n\nRequirements:\n- Add date picker or dropdown for start month/year selection\n- Default to current month\n- Update forecast generation to use selected start date\n- Ensure all calculations work correctly with any start date",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 23
+          },
+          {
+            "id": 8,
+            "title": "Add Comprehensive Forecast Variable Persistence to Save/Load",
+            "description": "Extend save/load functionality to remember all forecast variables including start date and starting balance",
+            "details": "When users save and load their financial plan, it should remember ALL forecast variables since these settings significantly impact the overall forecast accuracy. This includes:\n\nForecast variables to persist:\n- Start date selection (when to begin forecast)\n- Starting balance amount\n- Number of months/years to forecast\n- Conservative mode setting\n- Any other forecast configuration settings\n\nRequirements:\n- Update UserPlan data model to include forecast configuration\n- Modify save functionality to include forecast settings\n- Modify load functionality to restore forecast settings\n- Ensure forecast variables are properly restored on app reload\n- Update export/import to include these settings",
+            "status": "done",
+            "dependencies": [
+              "23.2",
+              "23.7"
             ],
             "parentTaskId": 23
           }
@@ -985,7 +1009,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-05T05:25:30.929Z",
+      "updated": "2025-07-05T06:00:13.234Z",
       "description": "Tasks for master context"
     }
   }

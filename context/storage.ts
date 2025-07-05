@@ -6,6 +6,7 @@
  */
 
 import { UserPlan } from "../types";
+import { initialForecastConfig } from "./initialState";
 
 // =============================================================================
 // STORAGE KEYS
@@ -127,14 +128,17 @@ export async function loadUserPlan(): Promise<UserPlan | null> {
       return null;
     }
 
+    // Migrate older data if needed
+    const migratedUserPlan = migrateUserPlan(userPlan);
+
     // Validate the loaded data structure
-    if (!isValidUserPlan(userPlan)) {
+    if (!isValidUserPlan(migratedUserPlan)) {
       console.warn("Loaded user plan failed validation");
       return null;
     }
 
     console.log("✅ User plan loaded successfully");
-    return userPlan;
+    return migratedUserPlan;
   } catch (error) {
     console.error("❌ Failed to load user plan:", error);
     return null;
@@ -187,6 +191,21 @@ export async function createBackup(userPlan: UserPlan): Promise<void> {
 }
 
 /**
+ * Migrate older user plan data to include forecast configuration
+ */
+function migrateUserPlan(userPlan: any): UserPlan {
+  // If forecastConfig is missing, add it with default values
+  if (!userPlan.forecastConfig) {
+    userPlan.forecastConfig = {
+      ...initialForecastConfig,
+      startingBalance: userPlan.currentBalance || 0,
+    };
+  }
+
+  return userPlan as UserPlan;
+}
+
+/**
  * Validate user plan structure
  */
 function isValidUserPlan(userPlan: any): userPlan is UserPlan {
@@ -200,6 +219,14 @@ function isValidUserPlan(userPlan: any): userPlan is UserPlan {
       Array.isArray(userPlan.goals) &&
       Array.isArray(userPlan.forecast) &&
       typeof userPlan.currentBalance === "number" &&
+      userPlan.forecastConfig &&
+      typeof userPlan.forecastConfig === "object" &&
+      typeof userPlan.forecastConfig.startingBalance === "number" &&
+      typeof userPlan.forecastConfig.startDate === "string" &&
+      typeof userPlan.forecastConfig.months === "number" &&
+      typeof userPlan.forecastConfig.includeGoalContributions === "boolean" &&
+      typeof userPlan.forecastConfig.conservativeMode === "boolean" &&
+      typeof userPlan.forecastConfig.updatedAt === "string" &&
       typeof userPlan.createdAt === "string" &&
       typeof userPlan.updatedAt === "string"
     );

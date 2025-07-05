@@ -30,16 +30,34 @@ export default function ExpensesPage() {
     description: "",
     priority: Priority.MEDIUM,
     isActive: true,
+    isInstallment: false,
+    installmentMonths: 1,
+    installmentStartMonth: "",
   });
 
   const handleInputChange = (
     field: keyof CreateExpenseInput,
     value: string | number | boolean | Frequency | ExpenseCategory | Priority
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-populate installment start month when installment is enabled
+      if (
+        field === "isInstallment" &&
+        value === true &&
+        !prev.installmentStartMonth
+      ) {
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        newData.installmentStartMonth = nextMonth.toISOString().slice(0, 7); // YYYY-MM format
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,6 +89,9 @@ export default function ExpensesPage() {
         description: "",
         priority: Priority.MEDIUM,
         isActive: true,
+        isInstallment: false,
+        installmentMonths: 1,
+        installmentStartMonth: "",
       });
     } catch (error) {
       console.error("Failed to save expense:", error);
@@ -88,6 +109,9 @@ export default function ExpensesPage() {
     recurring: boolean;
     priority: Priority;
     isActive: boolean;
+    isInstallment?: boolean;
+    installmentMonths?: number;
+    installmentStartMonth?: string;
   }) => {
     setFormData({
       name: expense.name,
@@ -99,6 +123,9 @@ export default function ExpensesPage() {
       recurring: expense.recurring,
       priority: expense.priority,
       isActive: expense.isActive,
+      isInstallment: expense.isInstallment || false,
+      installmentMonths: expense.installmentMonths || 1,
+      installmentStartMonth: expense.installmentStartMonth || "",
     });
     setEditingExpense(expense.id);
     setIsAddFormOpen(true);
@@ -127,6 +154,9 @@ export default function ExpensesPage() {
       description: "",
       priority: Priority.MEDIUM,
       isActive: true,
+      isInstallment: false,
+      installmentMonths: 1,
+      installmentStartMonth: "",
     });
   };
 
@@ -144,26 +174,36 @@ export default function ExpensesPage() {
     );
   };
 
-  const calculateMonthlyAmount = (amount: number, frequency?: Frequency) => {
-    if (!frequency) return 0;
+  const calculateMonthlyAmount = (expense: {
+    amount: number;
+    frequency?: Frequency;
+    isInstallment?: boolean;
+    installmentMonths?: number;
+  }) => {
+    // Handle installment expenses
+    if (expense.isInstallment && expense.installmentMonths) {
+      return expense.amount / expense.installmentMonths;
+    }
 
-    switch (frequency) {
+    if (!expense.frequency) return 0;
+
+    switch (expense.frequency) {
       case Frequency.DAILY:
-        return amount * 30.44;
+        return expense.amount * 30.44;
       case Frequency.WEEKLY:
-        return amount * 4.33;
+        return expense.amount * 4.33;
       case Frequency.BIWEEKLY:
-        return amount * 2.17;
+        return expense.amount * 2.17;
       case Frequency.MONTHLY:
-        return amount;
+        return expense.amount;
       case Frequency.QUARTERLY:
-        return amount / 3;
+        return expense.amount / 3;
       case Frequency.YEARLY:
-        return amount / 12;
+        return expense.amount / 12;
       case Frequency.ONE_TIME:
         return 0; // One-time expenses don't contribute to monthly
       default:
-        return amount;
+        return expense.amount;
     }
   };
 
@@ -176,11 +216,7 @@ export default function ExpensesPage() {
 
   const totalMonthlyExpenses = state.userPlan.expenses
     .filter((expense) => expense.isActive)
-    .reduce(
-      (total, expense) =>
-        total + calculateMonthlyAmount(expense.amount, expense.frequency),
-      0
-    );
+    .reduce((total, expense) => total + calculateMonthlyAmount(expense), 0);
 
   const expensesByCategory = Object.values(ExpenseCategory)
     .map((category) => ({
@@ -190,11 +226,7 @@ export default function ExpensesPage() {
       ).length,
       total: state.userPlan.expenses
         .filter((expense) => expense.category === category && expense.isActive)
-        .reduce(
-          (sum, expense) =>
-            sum + calculateMonthlyAmount(expense.amount, expense.frequency),
-          0
-        ),
+        .reduce((sum, expense) => sum + calculateMonthlyAmount(expense), 0),
     }))
     .filter((item) => item.count > 0);
 
@@ -226,6 +258,12 @@ export default function ExpensesPage() {
         return "💳";
       case ExpenseCategory.INSURANCE:
         return "🛡️";
+      case ExpenseCategory.TRAVEL:
+        return "✈️";
+      case ExpenseCategory.SHOPPING:
+        return "🛍️";
+      case ExpenseCategory.KIDS:
+        return "👶";
       case ExpenseCategory.MISCELLANEOUS:
         return "📦";
       default:
@@ -561,6 +599,60 @@ export default function ExpensesPage() {
             )}
 
             <div className="md:col-span-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.isInstallment}
+                  onChange={(e) =>
+                    handleInputChange("isInstallment", e.target.checked)
+                  }
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Pay in installments
+                </span>
+              </label>
+            </div>
+
+            {formData.isInstallment && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Number of Months
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={formData.installmentMonths}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "installmentMonths",
+                        parseInt(e.target.value) || 1
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                    placeholder="12"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Starting Month
+                  </label>
+                  <input
+                    type="month"
+                    value={formData.installmentStartMonth}
+                    onChange={(e) =>
+                      handleInputChange("installmentStartMonth", e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description
               </label>
@@ -671,6 +763,11 @@ export default function ExpensesPage() {
                           Recurring
                         </span>
                       )}
+                      {expense.isInstallment && (
+                        <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          Installment ({expense.installmentMonths} months)
+                        </span>
+                      )}
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${
                           expense.isActive
@@ -695,26 +792,37 @@ export default function ExpensesPage() {
                             </span>
                           )}
                         </div>
+                        {expense.isInstallment && (
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {formatCurrency(
+                              expense.amount / (expense.installmentMonths || 1)
+                            )}{" "}
+                            per month
+                          </div>
+                        )}
                       </div>
                       <div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           Monthly Equivalent
                         </div>
                         <div className="text-lg font-medium text-red-600 dark:text-red-400">
-                          {formatCurrency(
-                            calculateMonthlyAmount(
-                              expense.amount,
-                              expense.frequency
-                            )
-                          )}
+                          {formatCurrency(calculateMonthlyAmount(expense))}
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Due Date
+                          {expense.isInstallment ? "Start Date" : "Due Date"}
                         </div>
                         <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                          {expense.dueDate
+                          {expense.isInstallment &&
+                          expense.installmentStartMonth
+                            ? new Date(
+                                expense.installmentStartMonth + "-01"
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                              })
+                            : expense.dueDate
                             ? new Date(expense.dueDate).toLocaleDateString()
                             : "Not set"}
                         </div>
@@ -724,7 +832,11 @@ export default function ExpensesPage() {
                           Type
                         </div>
                         <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                          {expense.recurring ? "Recurring" : "One-time"}
+                          {expense.isInstallment
+                            ? `Installment (${expense.installmentMonths} months)`
+                            : expense.recurring
+                            ? "Recurring"
+                            : "One-time"}
                         </div>
                       </div>
                     </div>

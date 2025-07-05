@@ -548,7 +548,7 @@
         "description": "Convert all default currency from USD to THB (Thai Baht) throughout the entire application, updating all currency formatting, display symbols, and default values.",
         "details": "Identify all instances where currency is displayed or processed. This includes input fields, display components, reports, and any stored default values. Update currency symbols from '$' to '฿' and ensure all formatting reflects Thai Baht conventions (e.g., decimal places, thousands separators). Modify any hardcoded USD values to their THB equivalents or adjust logic to fetch dynamic currency rates if applicable. Review the `FinancialContext` and any related state management to ensure currency type is consistently managed. Consider creating a global currency setting or utility function to centralize currency conversion and formatting logic.",
         "testStrategy": "Thoroughly test every page and component that displays or processes currency to ensure the change from USD to THB is complete and accurate. Verify that all currency symbols are '฿'. Input various numerical values to confirm correct formatting (e.g., 1,000.00 should display as 1,000.00฿). Check that calculations involving currency (e.g., in forecasts, goal tracking, dashboard summaries) remain accurate after the currency conversion. Test saving and loading financial plans to ensure currency settings persist correctly. Pay special attention to the Dashboard, Financial Forecast, Monthly Suggestions, and Save/Load functionalities to ensure they reflect the new currency.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           7,
           8,
@@ -564,7 +564,7 @@
         "description": "Address and resolve issues with amount input fields across the application, including default values, auto-clearing behavior, and display of currency symbols.",
         "details": "Identify all input fields where financial amounts are entered. Implement logic to ensure these fields default to '0' or a similar placeholder, but automatically clear when the user begins typing (on focus or first keypress). Specifically address the double dollar sign display issue on the Income page, ensuring only a single currency symbol is shown. Review and update relevant components and state management (e.g., `FinancialContext`) to ensure consistent behavior. Consider using controlled components and event handlers (e.g., `onFocus`, `onChange`) to manage input field state.",
         "testStrategy": "1. Navigate to all pages containing amount input fields (e.g., Income, Expenses, Goals). 2. Verify that amount fields initially display '0' or are empty. 3. Click or tab into an amount field and start typing; confirm that the default '0' clears automatically. 4. On the Income page, verify that only a single currency symbol (e.g., '฿' after Task 11) is displayed next to the amount, not a double symbol. 5. Enter various numerical values (integers, decimals) and ensure they are correctly formatted and displayed. 6. Test saving and loading data with these fields to ensure values persist correctly. 7. Verify that the currency symbol updates correctly after Task 11 is completed and integrated.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           4,
           11
@@ -578,7 +578,7 @@
         "description": "Enhance the Income Management module to allow users to specify both a start and an end date for each income source, enabling the management of time-bound income periods.",
         "details": "Modify the existing income source data structure within the `FinancialContext` to include `startDate` and `endDate` fields. Update the Income Management UI (forms and display) to allow users to input and view these dates. Implement validation to ensure `endDate` is not before `startDate`. Adjust any calculations or displays that rely on income to account for these date ranges, ensuring that income is only considered active within its specified period. Consider how this will impact the financial forecast and monthly suggestions.",
         "testStrategy": "1. Add new income sources with various start and end dates (e.g., current month to next month, past month to current month, long-term). 2. Edit existing income sources to add or modify start and end dates. 3. Verify that income is correctly recognized and calculated only within its active date range in the Income Management display. 4. Check that the financial forecast and monthly suggestions accurately reflect income based on the new date ranges. 5. Attempt to set an end date before a start date and verify that appropriate validation errors are displayed.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           4
         ],
@@ -591,7 +591,7 @@
         "description": "Fix the styling of the Goals page to align with the consistent design patterns established on other pages like Income and Expenses, ensuring a unified user interface.",
         "details": "Review the CSS and layout of the Goals page. Identify discrepancies in spacing, typography, color palette, component styling (e.g., buttons, input fields, cards), and overall visual hierarchy compared to the Income and Expenses pages. Apply existing Tailwind CSS classes and custom styles used across the application to the Goals page components. Ensure responsive design principles are maintained. Pay close attention to the `Goal` component's presentation, making sure it visually integrates seamlessly with the rest of the application's design language. This may involve updating the `Goal` data model if new styling-related properties are needed, or adjusting how existing properties are rendered.",
         "testStrategy": "1. Visually inspect the Goals page on various screen sizes (desktop, tablet, mobile) to ensure responsiveness and consistent layout. 2. Compare the Goals page's typography, color scheme, button styles, and input field appearances directly against the Income and Expenses pages. 3. Verify that all elements on the Goals page (e.g., goal cards, progress bars, forms for adding/editing goals) adhere to the established design system. 4. Check for any misaligned elements, incorrect spacing, or inconsistent visual patterns. 5. Ensure that the overall user experience on the Goals page feels cohesive with the rest of the application.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           2
         ],
@@ -604,7 +604,7 @@
         "description": "Add a starting balance input field to the Forecast page, allowing users to define an initial balance for their financial projections.",
         "details": "Modify the Forecast page UI to include a new input field specifically for the starting balance. This field should be clearly labeled and intuitively placed, possibly near the existing forecast controls or parameters. Update the financial forecasting logic (likely within the utility function or service created in Task 8) to incorporate this starting balance into the initial calculation of the 12-month projection. Ensure the input field handles numerical values correctly, potentially leveraging existing input validation or currency formatting components (considering Task 12). The starting balance should serve as the initial capital from which income is added and expenses/goals are subtracted over time.",
         "testStrategy": "1. Navigate to the Forecast page. 2. Verify the presence and clear labeling of the 'Starting Balance' input field. 3. Enter various positive and negative starting balance values and observe the forecast chart/table. 4. Confirm that the forecast accurately reflects the impact of the starting balance on the initial month's projection and subsequent months. 5. Test with a starting balance of zero to ensure it behaves as expected. 6. Verify that the input field correctly handles numerical input and integrates with any existing currency formatting (e.g., THB from Task 11). 7. Check for any unexpected behavior or errors when the starting balance is changed dynamically.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           8,
           12
@@ -618,17 +618,374 @@
         "description": "Fix the styling of the Import/Export page to align with the consistent design patterns established on other pages, ensuring a unified user interface.",
         "details": "Review the CSS and layout of the Import/Export page. Identify discrepancies in spacing, typography, color palette, component styling (e.g., buttons, input fields, cards), and overall visual hierarchy compared to other styled pages like Income, Expenses, and Goals. Apply existing Tailwind CSS classes and custom styles used across the application to the Import/Export page components. Ensure responsive design principles are maintained. Pay close attention to the layout of import/export controls, file upload areas, and any status messages, making sure they visually integrate seamlessly with the rest of the application.",
         "testStrategy": "1. Visually inspect the Import/Export page on various screen sizes (desktop, tablet, mobile) to ensure responsiveness and consistent layout. 2. Compare the Import/Export page's typography, color scheme, button styles, input field appearances, and overall component styling directly against the Income, Expenses, and Goals pages. 3. Verify that all interactive elements (e.g., file upload buttons, import/export triggers) maintain consistent hover, focus, and active states. 4. Ensure error and success messages related to import/export operations follow the application's standard notification styling. 5. Test with different themes (if applicable) to ensure styling consistency across themes.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           14
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Add Installment Functionality to Expenses",
+        "description": "Implement installment payment functionality for expenses, allowing users to spread planned expenses over multiple months with configurable options and updated financial calculations.",
+        "details": "Modify the expense data model to include fields for installment configuration (e.g., `isInstallment: boolean`, `numberOfMonths: number`, `startingMonth: string`). Update the expense input forms to include these new fields, ensuring proper validation and user experience. Adjust the expense calculation logic to distribute the total expense amount evenly across the specified number of months, starting from the `startingMonth`. Crucially, update the financial forecast calculations (Task 8) to accurately reflect these spread installment payments in future months' projections. Implement UI indicators on expense listings and forecast views to clearly show an expense's installment status, remaining payments, and progress. Ensure that monthly budgets and overall financial summaries correctly account for the prorated installment amounts.",
+        "testStrategy": "1. Create a new expense with installment options (e.g., $1200 over 12 months starting next month). Verify that the expense is displayed correctly with installment indicators. 2. Check the financial forecast for the next 12 months; confirm that $100 is deducted each month for the installment expense. 3. Create multiple installment expenses with different durations and starting months, and verify their correct reflection in the forecast. 4. Edit an existing installment expense to change its duration or starting month, and confirm the forecast updates accordingly. 5. Verify that installment expenses are correctly factored into monthly budget calculations and overall financial summaries. 6. Test edge cases: 1-month installment, very long installments, installments starting in the past, and installments with irregular amounts (if applicable). 7. Ensure UI indicators for installment status and progress are accurate and update dynamically as months pass (simulated). 8. Verify that non-installment expenses are unaffected by these changes.",
+        "status": "done",
+        "dependencies": [
+          5,
+          8
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Implement Smart Goal Progress Tracking and Allocation",
+        "description": "Enhance the Financial Goals module with advanced features including a priority system, forecast-based completion dates, automatic surplus cash allocation, and goal type selection.",
+        "details": "Implement a priority system for goals, allowing users to reorder them via drag-and-drop or assign numerical priorities. Develop logic to calculate and display forecast-based completion dates for goals, integrating with the existing financial forecast (Task 8). Introduce goal types: 'fixed amount' (e.g., saving $10,000) and 'open-ended' (e.g., investing a percentage monthly). Create an automatic surplus cash allocation mechanism that distributes available funds to goals based on their priority, ensuring fixed amount goals stop receiving allocation once their target is reached. Update the goal progress display to clearly show these new forecast completion dates. Implement validation to check if goals are achievable within their target dates given current financial projections. Finally, integrate these new goal allocation rules into the monthly financial forecast calculations to accurately reflect their impact on future balances.",
+        "testStrategy": "1. Verify goal priority: Create multiple goals, assign different priorities, and confirm that the allocation system prioritizes correctly. Test drag-and-drop reordering if implemented. 2. Test forecast completion dates: Set up goals with various target amounts and current progress. Verify that the calculated forecast completion dates are accurate and update dynamically with changes in income/expenses. 3. Validate goal types: Create both 'fixed amount' and 'open-ended' goals. Ensure fixed amount goals stop receiving allocation once their target is met. 4. Test automatic surplus allocation: Simulate scenarios with surplus cash and verify that it's correctly allocated to goals based on priority. 5. Check achievability validation: Create goals that are clearly unachievable by their target date and confirm that the system provides appropriate warnings or feedback. 6. Integrate with forecast: Ensure that goal allocations and their impact are accurately reflected in the 12-month financial forecast (Task 8). 7. UI/UX: Verify that the updated goal progress display, including forecast completion dates, is clear and intuitive.",
+        "status": "done",
+        "dependencies": [
+          6,
+          8
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Add New Expense Categories: Travel, Shopping, Kids",
+        "description": "Add new expense categories: Travel, Shopping, and Kids, including updates to the expense form, validation, styling, and reporting.",
+        "details": "Modify the existing expense category options to include 'Travel', 'Shopping', and 'Kids'. Update the expense input form's category dropdown to display these new options. Implement robust validation to ensure that only predefined categories can be selected and handled correctly throughout the application. If necessary, add appropriate icons or apply specific styling (e.g., color coding) to visually differentiate these new categories. Crucially, review and update any existing category-based filtering, reporting, or analytical features to ensure they correctly recognize and process expenses assigned to the new categories. This may involve updating database schemas, API endpoints, and front-end display logic.",
+        "testStrategy": "1. Verify that 'Travel', 'Shopping', and 'Kids' appear as selectable options in the expense category dropdown on the expense creation/edit form. 2. Create new expenses for each of the new categories and ensure they are saved correctly. 3. Attempt to create an expense with an invalid category to confirm validation prevents it. 4. Check that expenses assigned to the new categories are correctly displayed in the expense list and any relevant reports or dashboards. 5. Apply filters based on the new categories and verify that only relevant expenses are shown. 6. If icons or styling were added, confirm they are displayed correctly for the new categories. 7. Ensure that editing an existing expense allows changing its category to one of the new ones, and that the change persists and is reflected in reports.",
+        "status": "done",
+        "dependencies": [
+          5
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Enhance Dashboard with Advanced Charts and AI-Powered Insights",
+        "description": "Enhance the Dashboard with advanced data visualization charts and integrate AI-powered insights using the OpenRouter API to provide personalized financial analysis and suggestions.",
+        "details": "Implement various comprehensive data visualization charts on the Dashboard, including 'income vs expenses over time', 'goal progress charts', 'category breakdowns', and 'savings rate trends'. These charts should be interactive with drill-down capabilities, allowing users to explore data in more detail. Integrate the OpenRouter API to enable an 'Ask AI' button. This AI functionality will analyze the user's financial data (income, expenses, goals, forecast) and provide personalized insights and recommendations. Develop AI-powered suggestions for achieving specific financial goals within defined timeframes. Implement a configurable LLM model selection feature through the OpenRouter API, allowing users to choose their preferred model. Ensure real-time data analysis and intelligent financial recommendations are provided, leveraging existing financial data for contextual insights. Consider using a charting library like Chart.js or Recharts for visualization. The AI integration should focus on providing actionable advice based on the user's unique financial situation.",
+        "testStrategy": "1. Verify all specified charts (income vs expenses, goal progress, category breakdowns, savings rate trends) are accurately displayed on the Dashboard with correct data. 2. Test interactivity and drill-down capabilities for each chart. 3. Click the 'Ask AI' button and verify that it successfully queries the OpenRouter API and returns relevant, personalized financial insights based on the current financial data. 4. Test the AI-powered suggestions for achieving goals, ensuring they are logical and actionable. 5. Verify that the LLM model selection is functional and that changing the model affects the AI's responses appropriately. 6. Introduce new financial data (income, expenses, goals) and verify that charts and AI insights update in real-time. 7. Test edge cases, such as empty financial data or unusual spending patterns, to ensure robust AI responses and chart displays.",
+        "status": "pending",
+        "dependencies": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          13,
+          18
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install and Configure Chart Library",
+            "description": "Set up Chart.js or Recharts for dashboard visualizations",
+            "details": "Choose and install appropriate charting library with TypeScript support",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 20
+          },
+          {
+            "id": 2,
+            "title": "Create Income vs Expenses Trend Chart",
+            "description": "Implement time-based trend visualization for income and expenses",
+            "details": "Show monthly income vs expenses over time with interactive features",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 20
+          },
+          {
+            "id": 3,
+            "title": "Implement Goal Progress Visualization",
+            "description": "Create charts showing goal progress with completion forecasts",
+            "details": "Visual representation of goal completion timelines and progress tracking",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 20
+          },
+          {
+            "id": 4,
+            "title": "Add Expense Category Breakdown Chart",
+            "description": "Create pie/donut chart for expense category visualization",
+            "details": "Show expense distribution across categories with interactive features",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 20
+          },
+          {
+            "id": 5,
+            "title": "Set Up OpenRouter API Integration",
+            "description": "Configure OpenRouter API with environment variables and authentication",
+            "details": "Set up API keys, environment configuration, and basic API client",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 20
+          },
+          {
+            "id": 6,
+            "title": "Create AI Analysis Service",
+            "description": "Implement AI service with configurable LLM model selection",
+            "details": "Create service layer for AI analysis with model selection and prompt management",
+            "status": "pending",
+            "dependencies": [
+              5
+            ],
+            "parentTaskId": 20
+          },
+          {
+            "id": 7,
+            "title": "Implement Ask AI Button",
+            "description": "Create Ask AI button with financial data analysis prompts",
+            "details": "Add interactive AI button that analyzes user's financial data and provides insights",
+            "status": "pending",
+            "dependencies": [
+              6
+            ],
+            "parentTaskId": 20
+          }
+        ]
+      },
+      {
+        "id": 21,
+        "title": "Enhance Suggestions with Monthly Goal Allocation Breakdown",
+        "description": "Enhance the Financial Goals module with a detailed monthly goal allocation breakdown, including a calendar view, scheduling, visual indicators, and export functionality.",
+        "details": "Implement a new section within the Financial Goals module dedicated to monthly goal allocation. This section should display a detailed breakdown of when and how much money to allocate to each goal on a month-by-month basis. \n\n**Key Features:**\n1.  **Monthly Breakdown Table/List:** Create a clear table or list view showing each month, the goals targeted for that month, and the recommended allocation amount for each goal.\n2.  **Calendar/Timeline View:** Develop an interactive calendar or timeline visualization that visually represents the monthly goal allocations. This could involve highlighting specific months with allocation amounts or using a Gantt-chart-like representation.\n3.  **Goal Allocation Scheduling Logic:** Integrate with the existing smart goal allocation logic (Task 18) and financial forecast (Task 8) to generate realistic and optimized month-by-month allocation recommendations. This logic should consider goal priorities, target dates, current progress, and projected income/expenses.\n4.  **Visual Indicators:** Add visual cues (e.g., color-coding, icons, progress bars) to indicate optimal allocation timing, potential shortfalls, or successful allocations.\n5.  **Actionable Guidance:** Provide concise, month-specific guidance messages (e.g., 'In March, allocate ฿2,000 to Goal A and ฿1,500 to Goal B') directly within the breakdown or calendar view.\n6.  **Integration with Smart Goal Allocation:** Ensure seamless integration with the 'Implement Smart Goal Progress Tracking and Allocation' (Task 18) to leverage its priority system and forecast-based calculations for generating the monthly breakdown.\n7.  **Export Functionality:** Implement a feature to export the generated monthly goal allocation schedule (e.g., to CSV or PDF format). This will require considering data formatting for export.\n\n**Technical Considerations:**\n*   Utilize existing financial data from `FinancialContext` (Task 3) and the financial forecast (Task 8).\n*   Design a user-friendly interface that clearly presents complex allocation data.\n*   Ensure responsiveness for various screen sizes.\n*   Consider performance implications for generating and displaying detailed monthly data over extended periods.",
+        "testStrategy": "1.  **Verify Monthly Breakdown Accuracy:**\n    *   Create multiple goals with varying target amounts, target dates, and priorities.\n    *   Input diverse income and expense scenarios.\n    *   Verify that the monthly allocation breakdown accurately reflects the smart allocation logic, distributing funds correctly across months and goals based on priorities and forecast.\n    *   Test edge cases (e.g., insufficient funds, goals already met).\n2.  **Validate Calendar/Timeline View:**\n    *   Confirm that the calendar/timeline view visually represents the monthly allocations correctly, showing the right amounts in the right months.\n    *   Test interactivity (if applicable) and ensure visual indicators are displayed as expected.\n3.  **Test Actionable Guidance:**\n    *   Verify that the month-specific guidance messages are accurate, clear, and align with the displayed allocations.\n4.  **Confirm Smart Allocation Integration:**\n    *   Modify goal priorities and observe if the monthly breakdown adjusts accordingly.\n    *   Change income/expense data and verify that the allocation schedule updates to reflect the new financial forecast.\n5.  **Test Export Functionality:**\n    *   Generate a monthly allocation schedule.\n    *   Attempt to export the schedule to CSV/PDF.\n    *   Open the exported file and verify that the data is correctly formatted and complete, matching the on-screen display.\n6.  **UI/UX Review:**\n    *   Ensure the new features are intuitive, easy to understand, and visually consistent with the rest of the application's design language. Check responsiveness across devices.",
+        "status": "done",
+        "dependencies": [
+          4,
+          5,
+          6,
+          8,
+          9,
+          18
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Monthly Goal Allocation Calendar UI",
+            "description": "Create calendar/timeline UI component for monthly goal allocation display",
+            "details": "Design visual calendar showing month-by-month goal allocation recommendations",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 21
+          },
+          {
+            "id": 2,
+            "title": "Implement Goal Allocation Scheduling Algorithm",
+            "description": "Create algorithm for scheduling goal allocations based on priority and surplus",
+            "details": "Develop logic to determine optimal monthly allocation amounts for each goal",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 21
+          },
+          {
+            "id": 3,
+            "title": "Create Month-by-Month Allocation Breakdown",
+            "description": "Display detailed allocation breakdown showing specific amounts per month per goal",
+            "details": "Show clear breakdown like 'March: ฿2,000 to Emergency Fund, ฿1,500 to Vacation'",
+            "status": "done",
+            "dependencies": [
+              1,
+              2
+            ],
+            "parentTaskId": 21
+          },
+          {
+            "id": 4,
+            "title": "Add Export Functionality for Allocation Schedule",
+            "description": "Implement export functionality for goal allocation schedule",
+            "details": "Allow users to export monthly allocation schedule as PDF or CSV",
+            "status": "done",
+            "dependencies": [
+              3
+            ],
+            "parentTaskId": 21
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "title": "Fix and Improve Forecast Page Calculations and Display",
+        "description": "Debug and enhance the financial forecast page to ensure accurate balance projections, correct chart visualizations, and proper calculation flow for income, expenses, and goals.",
+        "details": "This task involves a comprehensive review and refactoring of the financial forecast logic and display. \n\n**1. Debug and Fix Forecast Calculation Logic:**\n*   Thoroughly review the existing forecast calculation utility (from Task 8) to identify and correct any bugs leading to inaccurate balance projections.\n*   Ensure that income, recurring expenses, installment expenses (Task 17), and goal allocations (Task 18) are correctly integrated into the monthly balance calculations.\n*   Verify that the starting balance input (Task 15) is accurately used as the initial point for projections.\n*   Address discrepancies where projected balances do not align with expected financial movements (e.g., balances only increasing).\n\n**2. Correct Chart Visualization:**\n*   Modify the chart rendering logic to accurately reflect the calculated monthly balances, ensuring that decreases and increases are properly visualized.\n*   Verify that the chart's Y-axis scales dynamically and appropriately to the projected balance range.\n*   Ensure data points on the chart correspond precisely to the calculated monthly balances.\n\n**3. Implement Proper Income vs. Expenses vs. Goals Calculation Flow:**\n*   Refine the order and method of applying income, expenses, and goal allocations within the forecast calculation to ensure logical and accurate progression.\n*   Confirm that surplus cash allocation to goals (Task 18) is correctly factored into the monthly balance.\n\n**4. Add Validation and Testing for Forecast Accuracy:**\n*   Implement unit tests for the core forecast calculation function to cover various scenarios (e.g., high income, high expenses, aggressive goals, mixed income/expense dates).\n*   Develop integration tests to verify the end-to-end accuracy of the forecast display on the page.\n\n**5. Ensure Installment Expenses and Goal Allocations are Properly Calculated:**\n*   Specifically verify that installment expenses (Task 17) are correctly distributed across months and impact the forecast accurately.\n*   Confirm that goal allocations, especially those from the smart allocation system (Task 18), are precisely reflected in the projected balances.\n\n**6. Add Debug Logging and Calculation Transparency:**\n*   Introduce detailed debug logging within the forecast calculation utility to output intermediate calculation steps and values. This will aid in future troubleshooting.\n*   Consider adding a 'debug mode' or a hidden section on the forecast page that can display a tabular breakdown of monthly income, expenses, goal allocations, and resulting balances for transparency during development and testing.",
+        "testStrategy": "**1. Unit Test Forecast Calculation Logic:**\n*   Create a suite of unit tests for the forecast calculation function. \n*   Test scenarios with: only income, only expenses, mixed income and expenses, income and expenses with goals, installment expenses, and various starting balances.\n*   Manually calculate expected monthly balances for several complex scenarios and assert that the function's output matches.\n\n**2. UI Verification - Chart Accuracy:**\n*   Navigate to the Forecast page.\n*   Input various financial data (income, expenses, goals, starting balance) that would result in both increasing and decreasing balances over time.\n*   Visually inspect the forecast chart to ensure it accurately reflects the projected balance changes (e.g., if expenses exceed income, the balance should decrease).\n*   Verify that the chart's data points align with the numerical monthly projections.\n\n**3. Data Consistency Check:**\n*   For a given financial plan, compare the projected monthly balances displayed on the chart/table with the detailed breakdown (if debug logging is exposed or manually calculated).\n*   Ensure that installment expenses are correctly spread across months and that goal allocations are deducted as expected.\n\n**4. Edge Case Testing:**\n*   Test with zero income, zero expenses, and zero goals.\n*   Test with very large and very small financial figures.\n*   Test with a negative starting balance.\n\n**5. Regression Testing:**\n*   After implementing fixes, re-run existing tests for Task 8, Task 15, Task 17, and Task 18 to ensure no new regressions have been introduced in related functionalities.",
+        "status": "done",
+        "dependencies": [
+          8,
+          15,
+          17,
+          18
+        ],
+        "priority": "critical",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Debug and Analyze Current Forecast Calculation Logic",
+            "description": "Thoroughly examine the existing forecast calculation code to identify issues with balance projections and chart visualization",
+            "details": "Review the generateForecast function, calculateSmartGoalAllocations, and chart data flow to understand why balances appear to only increase",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 22
+          },
+          {
+            "id": 2,
+            "title": "Fix Balance Calculation Flow",
+            "description": "Correct the core balance calculation to properly handle income - expenses - goals flow",
+            "details": "Ensure that expenses and goal allocations properly reduce the balance, not just add to it",
+            "status": "done",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 22
+          },
+          {
+            "id": 3,
+            "title": "Fix Installment Expense Calculations",
+            "description": "Ensure installment expenses are properly calculated and distributed across months",
+            "details": "Verify that installment expenses appear in the correct months and with the correct amounts",
+            "status": "done",
+            "dependencies": [
+              2
+            ],
+            "parentTaskId": 22
+          },
+          {
+            "id": 4,
+            "title": "Fix Smart Goal Allocation Calculations",
+            "description": "Correct the smart goal allocation logic to properly distribute surplus cash",
+            "details": "Ensure goal allocations are realistic and don't exceed available surplus",
+            "status": "done",
+            "dependencies": [
+              2
+            ],
+            "parentTaskId": 22
+          },
+          {
+            "id": 5,
+            "title": "Update Chart Visualization",
+            "description": "Fix chart visualization to show realistic balance changes instead of always increasing",
+            "details": "Update chart data to properly reflect months where balance decreases due to high expenses",
+            "status": "done",
+            "dependencies": [
+              2
+            ],
+            "parentTaskId": 22
+          },
+          {
+            "id": 6,
+            "title": "Add Calculation Transparency",
+            "description": "Add debug logging and calculation transparency for troubleshooting",
+            "details": "Implement detailed logging of each calculation step and provide visibility into how balances are computed",
+            "status": "done",
+            "dependencies": [
+              2
+            ],
+            "parentTaskId": 22
+          },
+          {
+            "id": 7,
+            "title": "Create Comprehensive Test Cases",
+            "description": "Develop test cases to validate forecast accuracy",
+            "details": "Create scenarios with different income/expense patterns to ensure calculations work correctly",
+            "status": "done",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "parentTaskId": 22
+          }
+        ]
+      },
+      {
+        "id": 23,
+        "title": "Improve Forecast Page Timeline and Starting Balance Persistence",
+        "description": "Enhance the Forecast page by implementing a January-based timeline, persistent starting balance, improved UI/UX for balance management, multi-year forecasting, and state management with reset functionality.",
+        "details": "This task focuses on a significant overhaul of the Forecast page's timeline and starting balance features.\n\n**1. January-Based Forecast Timeline:**\n*   Modify the forecast generation logic (likely within the utility function from Task 8) to always start the 12-month projection from January of the current year, regardless of the actual current month.\n*   Update the UI to reflect this January start, ensuring month labels and data align correctly.\n\n**2. Persistent Starting Balance:**\n*   Integrate the starting balance (from Task 15) with the global state management (Task 3) to ensure it persists across user sessions and page reloads.\n*   When the application loads, retrieve the saved starting balance and pre-populate the input field.\n\n**3. Improved UI/UX for Starting Balance:**\n*   Design and implement a more prominent and intuitive input mechanism for the starting balance. This could be a dedicated section in the Forecast page settings, a modal, or a clearly visible input field with a label like \"Starting Balance for January\".\n*   Consider adding inline help text or tooltips to explain the purpose of the starting balance.\n\n**4. Multi-Year Forecasting with Year Selection:**\n*   Extend the forecast calculation to support projections beyond 12 months, allowing for multi-year forecasts (e.g., 2, 3, or 5 years).\n*   Add a year selection dropdown or similar UI element on the Forecast page, enabling users to choose the number of years for the projection.\n*   Ensure the forecast calculations correctly extend income, expenses, and goal impacts over the selected multi-year period.\n\n**5. Proper State Management for Forecast Configuration:**\n*   Centralize the forecast configuration (e.g., starting month, number of years, starting balance) within the global state management (Task 3) to ensure consistency and easy access across components.\n*   When any of these configurations change, trigger a re-calculation and re-render of the forecast.\n\n**6. Reset Functionality for Starting Balance:**\n*   Implement a \"Reset\" button or similar control that allows users to revert the starting balance to a default value (e.g., 0 or the actual current balance if available).\n*   Ensure this reset action also updates the persistent storage and triggers a forecast recalculation.",
+        "testStrategy": "**1. January Start Date Verification:**\n*   Navigate to the Forecast page in different months (e.g., March, July, November).\n*   Verify that the forecast timeline consistently starts from January of the current year.\n*   Check that the monthly projections correctly align with the January start.\n\n**2. Starting Balance Persistence Test:**\n*   Enter a starting balance value on the Forecast page.\n*   Navigate away from the Forecast page and then return, or refresh the browser.\n*   Verify that the entered starting balance is retained and displayed correctly.\n*   Close and reopen the application; confirm the starting balance persists.\n\n**3. UI/UX for Starting Balance:**\n*   Assess the new UI/UX for setting the starting balance. Is it intuitive, clearly labeled, and easy to use?\n*   Test various input values (positive, negative, zero) and ensure proper validation and display.\n\n**4. Multi-Year Forecasting:**\n*   Select different year ranges (e.g., 1 year, 2 years, 5 years) using the new year selection control.\n*   Verify that the forecast extends correctly for the selected duration.\n*   Manually check a few distant months/years in the multi-year forecast to ensure calculations remain accurate.\n\n**5. State Management and Recalculation:**\n*   Change the starting balance, year selection, or other forecast configurations.\n*   Verify that the forecast immediately recalculates and updates the display.\n*   Ensure no stale data is shown after configuration changes.\n\n**6. Reset Starting Balance:**\n*   Set a custom starting balance.\n*   Click the 'Reset' button.\n*   Verify that the starting balance reverts to its default value (e.g., 0) and the forecast updates accordingly.\n*   Confirm that the reset value is also persisted if the default is meant to be saved.",
+        "status": "done",
+        "dependencies": [
+          8,
+          15,
+          22
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Modify Forecast to Start from January",
+            "description": "Change forecast generation to always begin from January instead of current month",
+            "details": "Update the forecast calculator to generate 12 months starting from January of the current year",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 23
+          },
+          {
+            "id": 2,
+            "title": "Implement Persistent Starting Balance Storage",
+            "description": "Add localStorage and context management for persistent starting balance",
+            "details": "Store user's preferred starting balance and restore it on app reload",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 23
+          },
+          {
+            "id": 3,
+            "title": "Create Improved Starting Balance UI",
+            "description": "Design and implement better UI for setting and managing starting balance",
+            "details": "Create a more prominent and user-friendly interface for starting balance input",
+            "status": "done",
+            "dependencies": [
+              2
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 4,
+            "title": "Add Year Selection for Multi-Year Forecasting",
+            "description": "Implement year selection dropdown to enable multi-year forecasting capabilities",
+            "details": "Allow users to view forecasts for different years (current, next year, etc.)",
+            "status": "done",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 5,
+            "title": "Implement Reset Functionality",
+            "description": "Add reset functionality to restore default starting balance",
+            "details": "Provide users with option to reset to current balance from user plan",
+            "status": "done",
+            "dependencies": [
+              2,
+              3
+            ],
+            "parentTaskId": 23
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-04T19:35:12.013Z",
+      "updated": "2025-07-05T05:03:59.533Z",
       "description": "Tasks for master context"
     }
   }

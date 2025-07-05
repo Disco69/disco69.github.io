@@ -23,6 +23,7 @@ import {
   UpdateGoalInput,
   FinancialSummary,
   MonthlySuggestion,
+  GoalType,
 } from "./index";
 
 // =============================================================================
@@ -72,10 +73,12 @@ export const sampleGoal: Goal = {
   targetAmount: 25000,
   targetDate: "2024-12-31",
   currentAmount: 5000,
-  description: "6 months of expenses for emergency situations",
+  description: "Build emergency fund for 6 months expenses",
   category: GoalCategory.EMERGENCY_FUND,
   priority: Priority.HIGH,
   isActive: true,
+  goalType: GoalType.FIXED_AMOUNT,
+  priorityOrder: 1,
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
 };
@@ -152,6 +155,8 @@ export const createGoalInput: CreateGoalInput = {
   category: GoalCategory.VACATION,
   priority: Priority.MEDIUM,
   isActive: true,
+  goalType: GoalType.FIXED_AMOUNT,
+  priorityOrder: 2,
 };
 
 // =============================================================================
@@ -212,6 +217,9 @@ export const sampleFinancialSummary: FinancialSummary = {
     [ExpenseCategory.EDUCATION]: 0,
     [ExpenseCategory.DEBT_PAYMENTS]: 500,
     [ExpenseCategory.SAVINGS]: 0,
+    [ExpenseCategory.TRAVEL]: 0,
+    [ExpenseCategory.SHOPPING]: 0,
+    [ExpenseCategory.KIDS]: 0,
     [ExpenseCategory.MISCELLANEOUS]: 50,
   },
   goalsByCategory: {

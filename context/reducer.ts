@@ -399,6 +399,28 @@ export function financialReducer(
         currentBalance: action.payload,
       });
 
+    case FinancialActionType.UPDATE_FORECAST_STARTING_BALANCE:
+      return {
+        ...state,
+        forecastConfig: {
+          ...state.forecastConfig,
+          startingBalance: action.payload,
+        },
+        hasUnsavedChanges: true,
+        lastUpdated: new Date().toISOString(),
+      };
+
+    case FinancialActionType.UPDATE_FORECAST_SELECTED_YEAR:
+      return {
+        ...state,
+        forecastConfig: {
+          ...state.forecastConfig,
+          selectedYear: action.payload,
+        },
+        hasUnsavedChanges: true,
+        lastUpdated: new Date().toISOString(),
+      };
+
     // Data persistence actions
     case FinancialActionType.SAVE_SUCCESS:
       return {

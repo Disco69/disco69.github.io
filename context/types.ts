@@ -61,6 +61,12 @@ export interface FinancialState {
   // Computed data
   financialSummary: FinancialSummary;
 
+  // Forecast configuration
+  forecastConfig: {
+    startingBalance: number;
+    selectedYear: number;
+  };
+
   // UI state
   loading: LoadingState;
   error: ErrorState;
@@ -119,6 +125,8 @@ export enum FinancialActionType {
   // UserPlan actions
   SET_USER_PLAN = "SET_USER_PLAN",
   UPDATE_CURRENT_BALANCE = "UPDATE_CURRENT_BALANCE",
+  UPDATE_FORECAST_STARTING_BALANCE = "UPDATE_FORECAST_STARTING_BALANCE",
+  UPDATE_FORECAST_SELECTED_YEAR = "UPDATE_FORECAST_SELECTED_YEAR",
 
   // Data persistence
   SAVE_SUCCESS = "SAVE_SUCCESS",
@@ -283,6 +291,16 @@ export interface UpdateCurrentBalanceAction extends BaseAction {
   payload: number;
 }
 
+export interface UpdateForecastStartingBalanceAction extends BaseAction {
+  type: FinancialActionType.UPDATE_FORECAST_STARTING_BALANCE;
+  payload: number;
+}
+
+export interface UpdateForecastSelectedYearAction extends BaseAction {
+  type: FinancialActionType.UPDATE_FORECAST_SELECTED_YEAR;
+  payload: number;
+}
+
 /**
  * Data persistence actions
  */
@@ -346,6 +364,8 @@ export type FinancialAction =
   | RegenerateForecastAction
   | SetUserPlanAction
   | UpdateCurrentBalanceAction
+  | UpdateForecastStartingBalanceAction
+  | UpdateForecastSelectedYearAction
   | SaveSuccessAction
   | SaveErrorAction
   | LoadSuccessAction
@@ -385,6 +405,8 @@ export interface FinancialContextValue {
   // Utility functions
   regenerateForecast: () => Promise<void>;
   updateCurrentBalance: (balance: number) => Promise<void>;
+  updateForecastStartingBalance: (balance: number) => Promise<void>;
+  updateForecastSelectedYear: (year: number) => Promise<void>;
   saveUserPlan: () => Promise<void>;
   loadUserPlan: () => Promise<void>;
   resetAll: () => void;

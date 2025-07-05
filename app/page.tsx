@@ -141,6 +141,9 @@ export default function DashboardPage() {
       [ExpenseCategory.EDUCATION]: "📚",
       [ExpenseCategory.DEBT_PAYMENTS]: "💳",
       [ExpenseCategory.SAVINGS]: "💰",
+      [ExpenseCategory.TRAVEL]: "✈️",
+      [ExpenseCategory.SHOPPING]: "🛍️",
+      [ExpenseCategory.KIDS]: "👶",
       [ExpenseCategory.MISCELLANEOUS]: "📦",
     };
     return icons[category] || "📦";

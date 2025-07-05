@@ -77,6 +77,9 @@ export const initialFinancialSummary: FinancialSummary = {
     [ExpenseCategory.EDUCATION]: 0,
     [ExpenseCategory.DEBT_PAYMENTS]: 0,
     [ExpenseCategory.SAVINGS]: 0,
+    [ExpenseCategory.TRAVEL]: 0,
+    [ExpenseCategory.SHOPPING]: 0,
+    [ExpenseCategory.KIDS]: 0,
     [ExpenseCategory.MISCELLANEOUS]: 0,
   },
   goalsByCategory: {
@@ -101,6 +104,12 @@ export const initialFinancialState: FinancialState = {
 
   // Computed data
   financialSummary: initialFinancialSummary,
+
+  // Forecast configuration
+  forecastConfig: {
+    startingBalance: 0,
+    selectedYear: new Date().getFullYear(),
+  },
 
   // UI state
   loading: initialLoadingState,
@@ -157,6 +166,10 @@ export function mergeWithInitialState(
     userPlan: {
       ...initialUserPlan,
       ...partialState.userPlan,
+    },
+    forecastConfig: {
+      ...initialFinancialState.forecastConfig,
+      ...partialState.forecastConfig,
     },
     loading: {
       ...initialLoadingState,

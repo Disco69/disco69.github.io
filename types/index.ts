@@ -37,6 +37,9 @@ export enum ExpenseCategory {
   EDUCATION = "education",
   DEBT_PAYMENTS = "debt_payments",
   SAVINGS = "savings",
+  TRAVEL = "travel",
+  SHOPPING = "shopping",
+  KIDS = "kids",
   MISCELLANEOUS = "miscellaneous",
 }
 
@@ -63,6 +66,14 @@ export enum GoalCategory {
   MAJOR_PURCHASE = "major_purchase",
   INVESTMENT = "investment",
   OTHER = "other",
+}
+
+/**
+ * Goal types for allocation behavior
+ */
+export enum GoalType {
+  FIXED_AMOUNT = "fixed_amount",
+  OPEN_ENDED = "open_ended",
 }
 
 // =============================================================================
@@ -138,6 +149,15 @@ export interface Expense {
   /** Whether this expense is active */
   isActive: boolean;
 
+  /** Whether this expense is paid in installments */
+  isInstallment?: boolean;
+
+  /** Number of months for installment payments */
+  installmentMonths?: number;
+
+  /** Starting month for installment payments (YYYY-MM format) */
+  installmentStartMonth?: string;
+
   /** When this record was created */
   createdAt: string;
 
@@ -175,6 +195,12 @@ export interface Goal {
 
   /** Whether this goal is active */
   isActive: boolean;
+
+  /** Type of goal - fixed amount or open-ended */
+  goalType: GoalType;
+
+  /** Priority order for allocation (lower number = higher priority) */
+  priorityOrder: number;
 
   /** When this record was created */
   createdAt: string;

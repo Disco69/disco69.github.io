@@ -1,20 +1,21 @@
 /**
  * Data Storage and Persistence
- * 
+ *
  * This file handles saving and loading user plan data to/from localStorage
  * with proper error handling and data validation.
  */
 
-import { UserPlan } from '../types';
+import { UserPlan } from "../types";
 
 // =============================================================================
 // STORAGE KEYS
 // =============================================================================
 
 const STORAGE_KEYS = {
-  USER_PLAN: 'finance-planner-user-plan',
-  APP_SETTINGS: 'finance-planner-settings',
-  BACKUP_DATA: 'finance-planner-backup'
+  USER_PLAN: "finance-planner-user-plan",
+  FORECAST_CONFIG: "finance-planner-forecast-config",
+  APP_SETTINGS: "finance-planner-settings",
+  BACKUP_DATA: "finance-planner-backup",
 } as const;
 
 // =============================================================================
@@ -26,9 +27,9 @@ const STORAGE_KEYS = {
  */
 function isLocalStorageAvailable(): boolean {
   try {
-    if (typeof window === 'undefined') return false;
-    
-    const test = '__storage_test__';
+    if (typeof window === "undefined") return false;
+
+    const test = "__storage_test__";
     window.localStorage.setItem(test, test);
     window.localStorage.removeItem(test);
     return true;
@@ -45,7 +46,7 @@ function safeJsonParse<T>(data: string, fallback: T): T {
     const parsed = JSON.parse(data);
     return parsed || fallback;
   } catch {
-    console.warn('Failed to parse JSON data, using fallback');
+    console.warn("Failed to parse JSON data, using fallback");
     return fallback;
   }
 }
@@ -57,7 +58,7 @@ function safeJsonStringify(data: any): string | null {
   try {
     return JSON.stringify(data);
   } catch (error) {
-    console.error('Failed to stringify data:', error);
+    console.error("Failed to stringify data:", error);
     return null;
   }
 }
@@ -71,35 +72,35 @@ function safeJsonStringify(data: any): string | null {
  */
 export async function saveUserPlan(userPlan: UserPlan): Promise<void> {
   if (!isLocalStorageAvailable()) {
-    throw new Error('localStorage is not available');
+    throw new Error("localStorage is not available");
   }
 
   try {
     // Create backup before saving new data
     await createBackup(userPlan);
-    
+
     const serialized = safeJsonStringify(userPlan);
     if (!serialized) {
-      throw new Error('Failed to serialize user plan');
+      throw new Error("Failed to serialize user plan");
     }
 
     window.localStorage.setItem(STORAGE_KEYS.USER_PLAN, serialized);
-    
+
     // Update last saved timestamp
     const metadata = {
       lastSaved: new Date().toISOString(),
-      version: '1.0.0'
+      version: "1.0.0",
     };
-    
+
     window.localStorage.setItem(
       `${STORAGE_KEYS.USER_PLAN}-metadata`,
-      safeJsonStringify(metadata) || '{}'
+      safeJsonStringify(metadata) || "{}"
     );
-    
-    console.log('✅ User plan saved successfully');
+
+    console.log("✅ User plan saved successfully");
   } catch (error) {
-    console.error('❌ Failed to save user plan:', error);
-    throw new Error('Failed to save user plan to storage');
+    console.error("❌ Failed to save user plan:", error);
+    throw new Error("Failed to save user plan to storage");
   }
 }
 
@@ -108,35 +109,35 @@ export async function saveUserPlan(userPlan: UserPlan): Promise<void> {
  */
 export async function loadUserPlan(): Promise<UserPlan | null> {
   if (!isLocalStorageAvailable()) {
-    console.warn('localStorage is not available');
+    console.warn("localStorage is not available");
     return null;
   }
 
   try {
     const data = window.localStorage.getItem(STORAGE_KEYS.USER_PLAN);
-    
+
     if (!data) {
-      console.log('No saved user plan found');
+      console.log("No saved user plan found");
       return null;
     }
 
     const userPlan = safeJsonParse<UserPlan | null>(data, null);
-    
+
     if (!userPlan) {
-      console.warn('Invalid user plan data found in storage');
+      console.warn("Invalid user plan data found in storage");
       return null;
     }
 
     // Validate the loaded data structure
     if (!isValidUserPlan(userPlan)) {
-      console.warn('Loaded user plan failed validation');
+      console.warn("Loaded user plan failed validation");
       return null;
     }
 
-    console.log('✅ User plan loaded successfully');
+    console.log("✅ User plan loaded successfully");
     return userPlan;
   } catch (error) {
-    console.error('❌ Failed to load user plan:', error);
+    console.error("❌ Failed to load user plan:", error);
     return null;
   }
 }
@@ -146,17 +147,88 @@ export async function loadUserPlan(): Promise<UserPlan | null> {
  */
 export async function deleteUserPlan(): Promise<void> {
   if (!isLocalStorageAvailable()) {
-    throw new Error('localStorage is not available');
+    throw new Error("localStorage is not available");
   }
 
   try {
     window.localStorage.removeItem(STORAGE_KEYS.USER_PLAN);
     window.localStorage.removeItem(`${STORAGE_KEYS.USER_PLAN}-metadata`);
-    
-    console.log('✅ User plan deleted successfully');
+
+    console.log("✅ User plan deleted successfully");
   } catch (error) {
-    console.error('❌ Failed to delete user plan:', error);
-    throw new Error('Failed to delete user plan from storage');
+    console.error("❌ Failed to delete user plan:", error);
+    throw new Error("Failed to delete user plan from storage");
+  }
+}
+
+// =============================================================================
+// FORECAST CONFIGURATION PERSISTENCE
+// =============================================================================
+
+/**
+ * Save forecast configuration to localStorage
+ */
+export async function saveForecastConfig(config: {
+  startingBalance: number;
+  selectedYear: number;
+}): Promise<void> {
+  if (!isLocalStorageAvailable()) {
+    throw new Error("localStorage is not available");
+  }
+
+  try {
+    const serialized = safeJsonStringify(config);
+    if (!serialized) {
+      throw new Error("Failed to serialize forecast config");
+    }
+
+    window.localStorage.setItem(STORAGE_KEYS.FORECAST_CONFIG, serialized);
+    console.log("✅ Forecast config saved successfully");
+  } catch (error) {
+    console.error("❌ Failed to save forecast config:", error);
+    throw new Error("Failed to save forecast config to storage");
+  }
+}
+
+/**
+ * Load forecast configuration from localStorage
+ */
+export async function loadForecastConfig(): Promise<{
+  startingBalance: number;
+  selectedYear: number;
+} | null> {
+  if (!isLocalStorageAvailable()) {
+    console.warn("localStorage is not available");
+    return null;
+  }
+
+  try {
+    const data = window.localStorage.getItem(STORAGE_KEYS.FORECAST_CONFIG);
+
+    if (!data) {
+      console.log("No saved forecast config found");
+      return null;
+    }
+
+    const config = safeJsonParse<{
+      startingBalance: number;
+      selectedYear: number;
+    } | null>(data, null);
+
+    if (
+      !config ||
+      typeof config.startingBalance !== "number" ||
+      typeof config.selectedYear !== "number"
+    ) {
+      console.warn("Invalid forecast config data found in storage");
+      return null;
+    }
+
+    console.log("✅ Forecast config loaded successfully");
+    return config;
+  } catch (error) {
+    console.error("❌ Failed to load forecast config:", error);
+    return null;
   }
 }
 
@@ -174,7 +246,7 @@ export async function createBackup(userPlan: UserPlan): Promise<void> {
     const backup = {
       userPlan,
       timestamp: new Date().toISOString(),
-      version: '1.0.0'
+      version: "1.0.0",
     };
 
     const serialized = safeJsonStringify(backup);
@@ -182,7 +254,7 @@ export async function createBackup(userPlan: UserPlan): Promise<void> {
       window.localStorage.setItem(STORAGE_KEYS.BACKUP_DATA, serialized);
     }
   } catch (error) {
-    console.warn('Failed to create backup:', error);
+    console.warn("Failed to create backup:", error);
   }
 }
 
@@ -193,15 +265,15 @@ function isValidUserPlan(userPlan: any): userPlan is UserPlan {
   try {
     return (
       userPlan &&
-      typeof userPlan === 'object' &&
-      typeof userPlan.id === 'string' &&
+      typeof userPlan === "object" &&
+      typeof userPlan.id === "string" &&
       Array.isArray(userPlan.income) &&
       Array.isArray(userPlan.expenses) &&
       Array.isArray(userPlan.goals) &&
       Array.isArray(userPlan.forecast) &&
-      typeof userPlan.currentBalance === 'number' &&
-      typeof userPlan.createdAt === 'string' &&
-      typeof userPlan.updatedAt === 'string'
+      typeof userPlan.currentBalance === "number" &&
+      typeof userPlan.createdAt === "string" &&
+      typeof userPlan.updatedAt === "string"
     );
   } catch {
     return false;
@@ -223,7 +295,7 @@ export function getStorageInfo(): {
 
   try {
     let used = 0;
-    
+
     for (const key in window.localStorage) {
       if (window.localStorage.hasOwnProperty(key)) {
         used += window.localStorage[key].length + key.length;
@@ -239,7 +311,7 @@ export function getStorageInfo(): {
       used,
       available: Math.max(0, available),
       total: estimated_total,
-      percentage: Math.min(100, percentage)
+      percentage: Math.min(100, percentage),
     };
   } catch {
     return { used: 0, available: 0, total: 0, percentage: 0 };

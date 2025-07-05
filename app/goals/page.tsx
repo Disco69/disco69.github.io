@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import { useFinancialContext } from "@/context";
-import { Goal, GoalCategory, Priority, CreateGoalInput } from "@/types";
+import {
+  Goal,
+  GoalCategory,
+  GoalType,
+  Priority,
+  CreateGoalInput,
+} from "@/types";
 import { formatCurrency } from "@/utils/currency";
+import {
+  generateForecast,
+  generateMonthlyGoalAllocationSchedule,
+} from "@/utils/forecastCalculator";
 
 // Goal category icons mapping
 const goalCategoryIcons = {
@@ -61,6 +71,10 @@ export default function GoalsPage() {
   const [sortBy, setSortBy] = useState<
     "name" | "targetDate" | "progress" | "priority"
   >("targetDate");
+  const [showAllocationSchedule, setShowAllocationSchedule] = useState(false);
+  const [allocationView, setAllocationView] = useState<"calendar" | "table">(
+    "calendar"
+  );
 
   // Form state
   const [formData, setFormData] = useState<CreateGoalInput>({
@@ -72,10 +86,17 @@ export default function GoalsPage() {
     category: GoalCategory.OTHER,
     priority: Priority.MEDIUM,
     isActive: true,
+    goalType: GoalType.FIXED_AMOUNT,
+    priorityOrder: 1,
   });
 
   // Get goals from state
   const goals = state.userPlan?.goals || [];
+
+  // Generate monthly allocation schedule
+  const allocationSchedule = state.userPlan
+    ? generateMonthlyGoalAllocationSchedule(state.userPlan)
+    : null;
 
   // Filter and sort goals
   const filteredGoals = goals
@@ -143,6 +164,8 @@ export default function GoalsPage() {
         category: GoalCategory.OTHER,
         priority: Priority.MEDIUM,
         isActive: true,
+        goalType: GoalType.FIXED_AMOUNT,
+        priorityOrder: 1,
       });
       setIsAddingGoal(false);
       setEditingGoal(null);
@@ -163,6 +186,8 @@ export default function GoalsPage() {
       category: goal.category,
       priority: goal.priority,
       isActive: goal.isActive,
+      goalType: goal.goalType,
+      priorityOrder: goal.priorityOrder,
     });
     setIsAddingGoal(true);
   };
@@ -208,6 +233,234 @@ export default function GoalsPage() {
     const diffTime = target.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  // Calculate goal completion forecast
+  const getGoalForecast = (goal: Goal) => {
+    const forecastResult = generateForecast(state.userPlan, { months: 12 });
+    const goalProgress = forecastResult.goalProgress.find(
+      (g) => g.id === goal.id
+    );
+
+    if (goalProgress) {
+      return {
+        estimatedCompletionMonth: goalProgress.estimatedCompletionMonth,
+        onTrack: goalProgress.onTrack,
+        averageMonthlyAllocation: goalProgress.averageMonthlyAllocation,
+      };
+    }
+
+    return {
+      estimatedCompletionMonth: undefined,
+      onTrack: false,
+      averageMonthlyAllocation: 0,
+    };
+  };
+
+  // Format completion date
+  const formatCompletionDate = (monthString?: string) => {
+    if (!monthString) return "Not determined";
+
+    const date = new Date(monthString + "-01");
+    return date.toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "long",
+    });
+  };
+
+  // Get goal type label
+  const getGoalTypeLabel = (goalType: GoalType) => {
+    return goalType === GoalType.FIXED_AMOUNT ? "Fixed Amount" : "Open-Ended";
+  };
+
+  // Export functions
+  const exportToCSV = () => {
+    if (!allocationSchedule) return;
+
+    const headers = [
+      "Month",
+      "Surplus",
+      "Goal",
+      "Allocation Amount",
+      "Priority",
+      "On Track",
+      "Guidance",
+    ];
+    const csvData = [headers];
+
+    allocationSchedule.monthlySchedule.forEach((month) => {
+      const monthName = new Date(month.month + "-01").toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          year: "numeric",
+        }
+      );
+
+      if (month.goalAllocations.length === 0) {
+        csvData.push([
+          monthName,
+          formatCurrency(month.totalSurplus),
+          "No allocations",
+          "฿0",
+          "-",
+          "-",
+          month.guidance,
+        ]);
+      } else {
+        month.goalAllocations.forEach((allocation, index) => {
+          csvData.push([
+            index === 0 ? monthName : "", // Only show month name on first row
+            index === 0 ? formatCurrency(month.totalSurplus) : "",
+            allocation.goalName,
+            formatCurrency(allocation.amount),
+            allocation.priority,
+            allocation.isOnTrack ? "Yes" : "No",
+            index === 0 ? month.guidance : "",
+          ]);
+        });
+      }
+    });
+
+    const csvContent = csvData
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `goal-allocation-schedule-${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const exportToPDF = () => {
+    if (!allocationSchedule) return;
+
+    // Create a simple HTML content for PDF
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Goal Allocation Schedule</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            .summary { background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background: #f9fafb; font-weight: bold; }
+            .on-track { color: #059669; }
+            .behind { color: #dc2626; }
+            .guidance { font-style: italic; color: #6b7280; max-width: 200px; }
+          </style>
+        </head>
+        <body>
+          <h1>📅 Goal Allocation Schedule</h1>
+          <div class="summary">
+            <h3>Summary</h3>
+            <p><strong>Total Allocated:</strong> ${formatCurrency(
+              allocationSchedule.summary.totalAllocated
+            )}</p>
+            <p><strong>Goals On Track:</strong> ${
+              allocationSchedule.summary.goalsOnTrack
+            }</p>
+            <p><strong>Goals Behind Schedule:</strong> ${
+              allocationSchedule.summary.goalsBehindSchedule
+            }</p>
+            <p><strong>Average Monthly Allocation:</strong> ${formatCurrency(
+              allocationSchedule.summary.averageMonthlyAllocation
+            )}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Surplus</th>
+                <th>Goal</th>
+                <th>Allocation</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Guidance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allocationSchedule.monthlySchedule
+                .map((month) => {
+                  const monthName = new Date(
+                    month.month + "-01"
+                  ).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  });
+
+                  if (month.goalAllocations.length === 0) {
+                    return `
+                    <tr>
+                      <td>${monthName}</td>
+                      <td>${formatCurrency(month.totalSurplus)}</td>
+                      <td>No allocations</td>
+                      <td>฿0</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td class="guidance">${month.guidance}</td>
+                    </tr>
+                  `;
+                  } else {
+                    return month.goalAllocations
+                      .map(
+                        (allocation, index) => `
+                    <tr>
+                      <td>${index === 0 ? monthName : ""}</td>
+                      <td>${
+                        index === 0 ? formatCurrency(month.totalSurplus) : ""
+                      }</td>
+                      <td>${allocation.goalName}</td>
+                      <td>${formatCurrency(allocation.amount)}</td>
+                      <td>${allocation.priority}</td>
+                      <td class="${
+                        allocation.isOnTrack ? "on-track" : "behind"
+                      }">${allocation.isOnTrack ? "On Track" : "Behind"}</td>
+                      <td class="guidance">${
+                        index === 0 ? month.guidance : ""
+                      }</td>
+                    </tr>
+                  `
+                      )
+                      .join("");
+                  }
+                })
+                .join("")}
+            </tbody>
+          </table>
+          <p style="margin-top: 30px; color: #6b7280; font-size: 12px;">
+            Generated on ${new Date().toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })} at ${new Date().toLocaleTimeString("en-US")}
+          </p>
+        </body>
+      </html>
+    `;
+
+    // Open in new window for printing
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
   };
 
   return (
@@ -305,6 +558,344 @@ export default function GoalsPage() {
           </div>
         </div>
       </div>
+
+      {/* Monthly Goal Allocation Schedule */}
+      {goals.length > 0 && allocationSchedule && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                📅 Monthly Goal Allocation Schedule
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Detailed breakdown of when and how much to allocate to each goal
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() =>
+                  setShowAllocationSchedule(!showAllocationSchedule)
+                }
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z"
+                  />
+                </svg>
+                {showAllocationSchedule ? "Hide Schedule" : "Show Schedule"}
+              </button>
+
+              {showAllocationSchedule && (
+                <>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Export:
+                  </span>
+                  <button
+                    onClick={exportToCSV}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-1"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    CSV
+                  </button>
+                  <button
+                    onClick={exportToPDF}
+                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-1"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                    PDF
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                Total Allocated
+              </div>
+              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                {formatCurrency(allocationSchedule.summary.totalAllocated)}
+              </div>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                Goals On Track
+              </div>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {allocationSchedule.summary.goalsOnTrack}
+              </div>
+            </div>
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+              <div className="text-sm text-red-600 dark:text-red-400 font-medium">
+                Behind Schedule
+              </div>
+              <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+                {allocationSchedule.summary.goalsBehindSchedule}
+              </div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                Avg Monthly
+              </div>
+              <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                {formatCurrency(
+                  allocationSchedule.summary.averageMonthlyAllocation
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Schedule */}
+          {showAllocationSchedule && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Monthly Allocation Breakdown
+                </h3>
+                <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setAllocationView("calendar")}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      allocationView === "calendar"
+                        ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    📅 Calendar
+                  </button>
+                  <button
+                    onClick={() => setAllocationView("table")}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      allocationView === "table"
+                        ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    📋 Table
+                  </button>
+                </div>
+              </div>
+
+              {/* Calendar View */}
+              {allocationView === "calendar" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {allocationSchedule.monthlySchedule.map((month) => (
+                    <div
+                      key={month.month}
+                      className={`p-4 rounded-lg border-2 ${
+                        month.goalAllocations.length > 0
+                          ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                          {new Date(month.month + "-01").toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )}
+                        </h4>
+                        <div
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            month.totalSurplus > 0
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                          }`}
+                        >
+                          {month.totalSurplus > 0 ? "+" : ""}
+                          {formatCurrency(month.totalSurplus)}
+                        </div>
+                      </div>
+
+                      {month.goalAllocations.length > 0 ? (
+                        <div className="space-y-2">
+                          {month.goalAllocations.map((allocation) => (
+                            <div
+                              key={allocation.goalId}
+                              className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-3 h-3 rounded-full ${
+                                    allocation.isOnTrack
+                                      ? "bg-green-500"
+                                      : "bg-red-500"
+                                  }`}
+                                />
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {allocation.goalName}
+                                </span>
+                              </div>
+                              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                                {formatCurrency(allocation.amount)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">
+                            No allocations
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Guidance */}
+                      <div className="mt-3 p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          💡 {month.guidance}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Table View */}
+              {allocationView === "table" && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          Month
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          Surplus
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          Goal Allocations
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          Total Allocated
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">
+                          Guidance
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allocationSchedule.monthlySchedule.map((month) => (
+                        <tr
+                          key={month.month}
+                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                        >
+                          <td className="py-4 px-4">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                              {new Date(month.month + "-01").toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "long",
+                                  year: "numeric",
+                                }
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span
+                              className={`font-medium ${
+                                month.totalSurplus > 0
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
+                              }`}
+                            >
+                              {month.totalSurplus > 0 ? "+" : ""}
+                              {formatCurrency(month.totalSurplus)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            {month.goalAllocations.length > 0 ? (
+                              <div className="space-y-1">
+                                {month.goalAllocations.map((allocation) => (
+                                  <div
+                                    key={allocation.goalId}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <div
+                                      className={`w-2 h-2 rounded-full ${
+                                        allocation.isOnTrack
+                                          ? "bg-green-500"
+                                          : "bg-red-500"
+                                      }`}
+                                    />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                      {allocation.goalName}:{" "}
+                                      <span className="font-medium text-blue-600 dark:text-blue-400">
+                                        {formatCurrency(allocation.amount)}
+                                      </span>
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                No allocations
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {formatCurrency(
+                                month.goalAllocations.reduce(
+                                  (sum, g) => sum + g.amount,
+                                  0
+                                )
+                              )}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+                              {month.guidance}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Controls */}
       <div className="flex justify-between items-center">
@@ -501,6 +1092,51 @@ export default function GoalsPage() {
               </select>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Goal Type
+              </label>
+              <select
+                value={formData.goalType}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    goalType: e.target.value as GoalType,
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+              >
+                <option value={GoalType.FIXED_AMOUNT}>Fixed Amount</option>
+                <option value={GoalType.OPEN_ENDED}>Open-Ended</option>
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Fixed amount goals stop receiving allocation once target is
+                reached
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Priority Order
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.priorityOrder}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    priorityOrder: parseInt(e.target.value) || 1,
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="1"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Lower numbers get higher priority for surplus allocation
+              </p>
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description
@@ -531,6 +1167,8 @@ export default function GoalsPage() {
                     category: GoalCategory.OTHER,
                     priority: Priority.MEDIUM,
                     isActive: true,
+                    goalType: GoalType.FIXED_AMOUNT,
+                    priorityOrder: 1,
                   });
                 }}
                 className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
@@ -585,6 +1223,12 @@ export default function GoalsPage() {
               const daysUntilTarget = getDaysUntilTarget(goal.targetDate);
               const isOverdue = daysUntilTarget < 0;
               const isCompleted = progress >= 100;
+
+              const forecast = getGoalForecast(goal);
+              const completionDate = formatCompletionDate(
+                forecast.estimatedCompletionMonth
+              );
+              const goalTypeLabel = getGoalTypeLabel(goal.goalType);
 
               return (
                 <div key={goal.id} className="p-6">
@@ -688,6 +1332,68 @@ export default function GoalsPage() {
                                 : `${daysUntilTarget} days left`}
                             </p>
                           )}
+                        </div>
+                      </div>
+
+                      {/* Forecast Information */}
+                      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          📊 Forecast & Allocation
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Goal Type
+                            </p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              {goalTypeLabel}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Priority Order
+                            </p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              #{goal.priorityOrder}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Monthly Allocation
+                            </p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              {formatCurrency(
+                                forecast.averageMonthlyAllocation
+                              )}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Est. Completion
+                            </p>
+                            <p
+                              className={`font-semibold ${
+                                forecast.onTrack
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
+                              }`}
+                            >
+                              {completionDate}
+                            </p>
+                            {!isCompleted && (
+                              <p
+                                className={`text-xs ${
+                                  forecast.onTrack
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-red-600 dark:text-red-400"
+                                }`}
+                              >
+                                {forecast.onTrack
+                                  ? "On Track"
+                                  : "Behind Schedule"}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

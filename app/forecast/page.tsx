@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useFinancialState } from "@/context";
+import { useFinancialState, useFinancialContext } from "@/context";
 import {
   generateForecast,
   ForecastConfig,
@@ -12,13 +12,64 @@ import { formatCurrency } from "@/utils/currency";
 
 export default function ForecastPage() {
   const state = useFinancialState();
+  const { updateForecastStartingBalance, updateForecastSelectedYear } =
+    useFinancialContext();
   const [config, setConfig] = useState<ForecastConfig>({
     ...DEFAULT_FORECAST_CONFIG,
-    startingBalance: state.userPlan?.currentBalance || 0,
+    startingBalance:
+      state.forecastConfig?.startingBalance ||
+      state.userPlan?.currentBalance ||
+      0,
   });
   const [selectedView, setSelectedView] = useState<"table" | "chart" | "goals">(
     "table"
   );
+
+  // Handle starting balance update
+  const handleStartingBalanceChange = async (newBalance: number) => {
+    setConfig((prev) => ({ ...prev, startingBalance: newBalance }));
+    try {
+      await updateForecastStartingBalance(newBalance);
+    } catch (error) {
+      console.error("Failed to save starting balance:", error);
+    }
+  };
+
+  // Handle year selection change
+  const handleYearChange = async (newYear: number) => {
+    setConfig((prev) => ({
+      ...prev,
+      startDate: new Date(newYear, 0, 1), // January 1st of selected year
+    }));
+    try {
+      await updateForecastSelectedYear(newYear);
+    } catch (error) {
+      console.error("Failed to save selected year:", error);
+    }
+  };
+
+  // Handle reset to defaults
+  const handleResetToDefaults = async () => {
+    const defaultConfig = {
+      ...DEFAULT_FORECAST_CONFIG,
+      startingBalance: state.userPlan?.currentBalance || 0,
+    };
+    setConfig(defaultConfig);
+
+    try {
+      await updateForecastStartingBalance(defaultConfig.startingBalance);
+      await updateForecastSelectedYear(new Date().getFullYear());
+    } catch (error) {
+      console.error("Failed to reset configuration:", error);
+    }
+  };
+
+  // Get available years (current year and next 2 years)
+  const currentYear = new Date().getFullYear();
+  const availableYears = [currentYear, currentYear + 1, currentYear + 2];
+  const selectedYear = config.startDate
+    ? config.startDate.getFullYear()
+    : currentYear;
 
   // Generate forecast when data or config changes
   const forecastResult: ForecastResult = useMemo(() => {
@@ -104,20 +155,16 @@ export default function ForecastPage() {
                     e.target.value === "0" && (e.target.value = "")
                   }
                   onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      startingBalance: parseFloat(e.target.value) || 0,
-                    })
+                    handleStartingBalanceChange(parseFloat(e.target.value) || 0)
                   }
                   className="w-32 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-sm"
                   placeholder="0.00"
                 />
                 <button
                   onClick={() =>
-                    setConfig({
-                      ...config,
-                      startingBalance: state.userPlan?.currentBalance || 0,
-                    })
+                    handleStartingBalanceChange(
+                      state.userPlan?.currentBalance || 0
+                    )
                   }
                   className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                   title="Reset to current balance"
@@ -157,6 +204,22 @@ export default function ForecastPage() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Year
+              </label>
+              <select
+                value={selectedYear}
+                onChange={(e) => handleYearChange(parseInt(e.target.value))}
+                className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+              >
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year} {year === currentYear && "(Current)"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Months
               </label>
               <select
@@ -170,6 +233,28 @@ export default function ForecastPage() {
                 <option value={12}>12 months</option>
                 <option value={24}>24 months</option>
               </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleResetToDefaults}
+                className="px-4 py-2 text-sm bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors flex items-center gap-2"
+                title="Reset all forecast settings to defaults"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Reset
+              </button>
             </div>
           </div>
         </div>

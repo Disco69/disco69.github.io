@@ -61,6 +61,11 @@ export interface MonthlyForecast {
     id: string;
     name: string;
     amount: number;
+    installmentInfo?: {
+      currentMonth: number;
+      totalMonths: number;
+      isInstallment: boolean;
+    };
   }>;
   /** Breakdown by goal contributions */
   goalBreakdown: Array<{
@@ -135,6 +140,10 @@ export function calculateMonthlyAmount(
   amount: number,
   frequency: Frequency
 ): number {
+  // Handle one-time income/expense separately since they use the full amount
+  if (frequency === Frequency.ONE_TIME) {
+    return amount;
+  }
   return amount * getMonthlyMultiplier(frequency);
 }
 
@@ -145,12 +154,28 @@ export function isIncomeActiveInMonth(
   income: Income,
   monthDate: Date
 ): boolean {
-  const startDate = new Date(income.startDate);
-  const endDate = income.endDate ? new Date(income.endDate) : null;
-
   // Check if the income is active
   if (!income.isActive) return false;
 
+  const startDate = new Date(income.startDate);
+  const endDate = income.endDate ? new Date(income.endDate) : null;
+
+  // For one-time income, only active in the specific month of the start date
+  if (income.frequency === Frequency.ONE_TIME) {
+    const incomeMonth = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+    const forecastMonth = new Date(
+      monthDate.getFullYear(),
+      monthDate.getMonth(),
+      1
+    );
+    return incomeMonth.getTime() === forecastMonth.getTime();
+  }
+
+  // For recurring income, check if it's within the active period
   // Check if the month is after the start date
   if (monthDate < startDate) return false;
 
@@ -176,22 +201,90 @@ export function isExpenseActiveInMonth(
     expense.installmentStartMonth &&
     expense.installmentMonths
   ) {
-    const startDate = new Date(expense.installmentStartMonth + "-01");
+    // Create dates in UTC to avoid timezone issues
+    const startDate = new Date(
+      expense.installmentStartMonth + "-01T00:00:00.000Z"
+    );
     const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + expense.installmentMonths);
+    endDate.setUTCMonth(endDate.getUTCMonth() + expense.installmentMonths - 1); // Fix: should be -1 because we include the start month
 
     const currentMonthStart = new Date(
       monthDate.getFullYear(),
       monthDate.getMonth(),
       1
     );
+    // Convert to UTC for consistent comparison
+    const currentMonthUTC = new Date(
+      Date.UTC(currentMonthStart.getFullYear(), currentMonthStart.getMonth(), 1)
+    );
 
-    return currentMonthStart >= startDate && currentMonthStart < endDate;
+    const isActive = currentMonthUTC >= startDate && currentMonthUTC <= endDate;
+
+    // Add debug logging for installments
+    if (process.env.NODE_ENV === "development") {
+      console.log(`🔍 Installment Check: ${expense.name}`);
+      console.log(`   StartMonth: ${expense.installmentStartMonth}`);
+      console.log(`   StartDate: ${startDate.toISOString()}`);
+      console.log(
+        `   StartDate Local: ${startDate.getUTCFullYear()}-${String(
+          startDate.getUTCMonth() + 1
+        ).padStart(2, "0")}-${String(startDate.getUTCDate()).padStart(2, "0")}`
+      );
+      console.log(`   EndDate: ${endDate.toISOString()}`);
+      console.log(`   CurrentMonth: ${currentMonthUTC.toISOString()}`);
+      console.log(
+        `   CurrentMonth Local: ${currentMonthUTC.getUTCFullYear()}-${String(
+          currentMonthUTC.getUTCMonth() + 1
+        ).padStart(2, "0")}-${String(currentMonthUTC.getUTCDate()).padStart(
+          2,
+          "0"
+        )}`
+      );
+      console.log(
+        `   Comparison: ${currentMonthUTC.getTime()} >= ${startDate.getTime()} && ${currentMonthUTC.getTime()} <= ${endDate.getTime()}`
+      );
+      console.log(`   IsActive: ${isActive}`);
+    }
+
+    // Fix: should be <= endDate to include the last month
+    return isActive;
   }
 
-  // For recurring expenses, they are always active once created
-  if (expense.recurring) {
-    return true;
+  // For recurring expenses, check frequency to determine if active in this month
+  if (expense.recurring && expense.frequency) {
+    const dueDate = new Date(expense.dueDate);
+    const forecastMonth = new Date(
+      monthDate.getFullYear(),
+      monthDate.getMonth(),
+      1
+    );
+    const dueDateMonth = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
+
+    switch (expense.frequency) {
+      case Frequency.YEARLY:
+        // Yearly expenses only happen in the month of the due date each year
+        return forecastMonth.getMonth() === dueDateMonth.getMonth();
+
+      case Frequency.QUARTERLY:
+        // Quarterly expenses happen every 3 months from the due date month
+        const monthsDiff =
+          (forecastMonth.getFullYear() - dueDateMonth.getFullYear()) * 12 +
+          (forecastMonth.getMonth() - dueDateMonth.getMonth());
+        return monthsDiff >= 0 && monthsDiff % 3 === 0;
+
+      case Frequency.MONTHLY:
+        // Monthly expenses happen every month
+        return true;
+
+      case Frequency.WEEKLY:
+      case Frequency.BIWEEKLY:
+      case Frequency.DAILY:
+        // These happen frequently enough to be considered monthly
+        return true;
+
+      default:
+        return true;
+    }
   }
 
   // For one-time expenses, check if the due date is in the current month
@@ -255,6 +348,18 @@ export function calculateGoalContribution(
   }
 
   return Math.max(0, requiredMonthlyContribution * priorityMultiplier);
+}
+
+/**
+ * Round allocation amount to nearest thousand (ending with 000) for easier real-life usage
+ */
+function roundToThousand(amount: number): number {
+  // If amount is less than 1000, round to nearest 100 instead
+  if (amount < 1000) {
+    return Math.round(amount / 100) * 100;
+  }
+  // Round to nearest thousand
+  return Math.round(amount / 1000) * 1000;
 }
 
 /**
@@ -351,10 +456,22 @@ export function calculateSmartGoalAllocations(
     );
 
     // Don't allocate more than available surplus, but ensure minimum for high priority
-    const allocation = Math.max(
+    let allocation = Math.max(
       minimumAllocation,
       Math.min(requiredAmount, remainingSurplus)
     );
+
+    // For fixed amount goals, ensure we never allocate more than remaining needed
+    if (goal.goalType === GoalType.FIXED_AMOUNT) {
+      const remainingNeeded = goal.targetAmount - goal.currentAmount;
+      allocation = Math.min(allocation, remainingNeeded);
+    }
+
+    // Round allocation to nearest thousand (ending with 000) for easier real-life usage
+    allocation = roundToThousand(allocation);
+
+    // Ensure we don't exceed available surplus after rounding
+    allocation = Math.min(allocation, remainingSurplus);
 
     if (allocation > 0) {
       allocations.push({
@@ -458,6 +575,12 @@ export function generateForecast(
   const monthlyForecasts: MonthlyForecast[] = [];
   let currentBalance = finalConfig.startingBalance;
 
+  // Create a copy of goals with running totals to track progress
+  const goalTracker = new Map<string, { goal: Goal; currentAmount: number }>();
+  userPlan.goals.forEach((goal) => {
+    goalTracker.set(goal.id, { goal, currentAmount: goal.currentAmount });
+  });
+
   // Add debug logging for forecast configuration
   if (process.env.NODE_ENV === "development") {
     console.log("🔍 Forecast Generation Started");
@@ -527,10 +650,32 @@ export function generateForecast(
       id: string;
       name: string;
       amount: number;
+      installmentInfo?: {
+        currentMonth: number;
+        totalMonths: number;
+        isInstallment: boolean;
+      };
     }> = [];
     let totalExpenses = 0;
 
     for (const expense of userPlan.expenses) {
+      // Add debug logging for expense processing
+      if (process.env.NODE_ENV === "development") {
+        console.log(`  🔍 Checking expense: ${expense.name}`);
+        console.log(`     Amount: ${expense.amount}`);
+        console.log(`     IsInstallment: ${expense.isInstallment}`);
+        console.log(
+          `     InstallmentStartMonth: ${expense.installmentStartMonth}`
+        );
+        console.log(`     InstallmentMonths: ${expense.installmentMonths}`);
+        console.log(
+          `     IsActiveInMonth: ${isExpenseActiveInMonth(
+            expense,
+            currentDate
+          )}`
+        );
+      }
+
       if (isExpenseActiveInMonth(expense, currentDate)) {
         let monthlyAmount: number;
 
@@ -538,6 +683,8 @@ export function generateForecast(
         if (expense.isInstallment && expense.installmentMonths) {
           // For installments, the expense.amount is the total amount to be split
           monthlyAmount = expense.amount / expense.installmentMonths;
+          // Round installment amounts to clean numbers
+          monthlyAmount = roundToThousand(monthlyAmount);
 
           // Add debug logging for installment calculations
           if (process.env.NODE_ENV === "development") {
@@ -547,10 +694,19 @@ export function generateForecast(
           }
         } else if (expense.recurring && expense.frequency) {
           // For recurring expenses, calculate based on frequency
-          monthlyAmount = calculateMonthlyAmount(
-            expense.amount,
-            expense.frequency
-          );
+          if (
+            expense.frequency === Frequency.YEARLY ||
+            expense.frequency === Frequency.QUARTERLY
+          ) {
+            // For yearly/quarterly expenses, use the full amount since they only happen in specific months
+            monthlyAmount = expense.amount;
+          } else {
+            // For other frequencies, calculate monthly equivalent
+            monthlyAmount = calculateMonthlyAmount(
+              expense.amount,
+              expense.frequency
+            );
+          }
         } else {
           // For one-time expenses, use the full amount
           monthlyAmount = expense.amount;
@@ -569,16 +725,60 @@ export function generateForecast(
           monthlyAmount *= 1.1; // Increase expenses by 10%
         }
 
+        // Calculate installment progress if applicable
+        let installmentInfo = undefined;
+        if (
+          expense.isInstallment &&
+          expense.installmentStartMonth &&
+          expense.installmentMonths
+        ) {
+          // Use UTC dates for consistency
+          const startDate = new Date(
+            expense.installmentStartMonth + "-01T00:00:00.000Z"
+          );
+          const currentMonthStart = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1
+          );
+          const currentMonthUTC = new Date(
+            Date.UTC(
+              currentMonthStart.getFullYear(),
+              currentMonthStart.getMonth(),
+              1
+            )
+          );
+          const monthsDiff =
+            (currentMonthUTC.getUTCFullYear() - startDate.getUTCFullYear()) *
+              12 +
+            (currentMonthUTC.getUTCMonth() - startDate.getUTCMonth()) +
+            1; // +1 because we start counting from 1
+
+          installmentInfo = {
+            currentMonth: monthsDiff,
+            totalMonths: expense.installmentMonths,
+            isInstallment: true,
+          };
+        }
+
         expenseBreakdown.push({
           id: expense.id,
           name: expense.name,
           amount: monthlyAmount,
+          installmentInfo: installmentInfo,
         });
         totalExpenses += monthlyAmount;
 
         // Add debug logging for expenses
         if (process.env.NODE_ENV === "development") {
-          console.log(`  💸 Expense: ${expense.name} = ${monthlyAmount}`);
+          const expenseType = expense.isInstallment
+            ? "Installment"
+            : expense.recurring
+            ? `Recurring (${expense.frequency})`
+            : "One-time";
+          console.log(
+            `  💸 Expense: ${expense.name} = ${monthlyAmount} [${expenseType}]`
+          );
         }
       }
     }
@@ -611,9 +811,17 @@ export function generateForecast(
         );
 
         if (availableForGoals > 0) {
+          // Create goals with updated current amounts for allocation calculation
+          const goalsWithUpdatedAmounts = Array.from(goalTracker.values()).map(
+            (entry) => ({
+              ...entry.goal,
+              currentAmount: entry.currentAmount,
+            })
+          );
+
           // Use smart goal allocation based on priority
           const smartAllocations = calculateSmartGoalAllocations(
-            userPlan.goals,
+            goalsWithUpdatedAmounts,
             availableForGoals,
             currentDate
           );
@@ -629,24 +837,51 @@ export function generateForecast(
             const scaleFactor = availableForGoals / totalGoalContributions;
             goalBreakdown.forEach((allocation) => {
               allocation.amount *= scaleFactor;
+              // Round again after scaling to maintain clean amounts
+              allocation.amount = roundToThousand(allocation.amount);
             });
-            totalGoalContributions = availableForGoals;
+            // Recalculate total after rounding
+            totalGoalContributions = goalBreakdown.reduce(
+              (sum, allocation) => sum + allocation.amount,
+              0
+            );
 
             if (process.env.NODE_ENV === "development") {
               console.log(
-                `  🎯 Goal allocations scaled by ${scaleFactor.toFixed(2)}`
+                `  🎯 Goal allocations scaled by ${scaleFactor.toFixed(
+                  2
+                )}, total after rounding: ${totalGoalContributions}`
               );
             }
           }
+
+          // Update goal tracker with this month's allocations
+          goalBreakdown.forEach((allocation) => {
+            const goalEntry = goalTracker.get(allocation.id);
+            if (goalEntry) {
+              goalEntry.currentAmount += allocation.amount;
+
+              // Add debug logging for goal progress
+              if (process.env.NODE_ENV === "development") {
+                const progress =
+                  goalEntry.goal.goalType === GoalType.FIXED_AMOUNT
+                    ? (goalEntry.currentAmount / goalEntry.goal.targetAmount) *
+                      100
+                    : 0;
+                console.log(
+                  `    - ${allocation.name}: ${allocation.amount} (progress: ${
+                    goalEntry.currentAmount
+                  }/${goalEntry.goal.targetAmount}, ${progress.toFixed(1)}%)`
+                );
+              }
+            }
+          });
 
           // Add debug logging for goal allocations
           if (process.env.NODE_ENV === "development") {
             console.log(
               `  🎯 Goal allocations: Total=${totalGoalContributions}, Available=${availableForGoals}`
             );
-            goalBreakdown.forEach((allocation) => {
-              console.log(`    - ${allocation.name}: ${allocation.amount}`);
-            });
           }
         }
       } else {

@@ -178,7 +178,8 @@ export default function ForecastPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-start">
+        <div className="space-y-6">
+          {/* Title Section */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               📈 Financial Forecast
@@ -217,50 +218,58 @@ export default function ForecastPage() {
             </p>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Starting Balance (THB)
-              </label>
-              <div className="flex items-center space-x-1">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={localConfig.startingBalance || ""}
-                  onFocus={(e) =>
-                    e.target.value === "0" && (e.target.value = "")
-                  }
-                  onChange={(e) =>
-                    updateConfig({
-                      startingBalance: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  className="w-32 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-sm"
-                  placeholder="0.00"
-                />
-                <button
-                  onClick={() =>
-                    updateConfig({
-                      startingBalance: state.userPlan?.currentBalance || 0,
-                    })
-                  }
-                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-                  title="Reset to current balance"
-                >
-                  Reset
-                </button>
+          {/* Controls Section */}
+          <div className="space-y-4">
+            {/* Row 1: Starting Balance */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 min-w-fit">
+                  Starting Balance (THB)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={localConfig.startingBalance || ""}
+                    onFocus={(e) =>
+                      e.target.value === "0" && (e.target.value = "")
+                    }
+                    onChange={(e) =>
+                      updateConfig({
+                        startingBalance: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 text-sm"
+                    placeholder="0.00"
+                  />
+                  <button
+                    onClick={() =>
+                      updateConfig({
+                        startingBalance: state.userPlan?.currentBalance || 0,
+                      })
+                    }
+                    className="px-3 py-2 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    title="Reset to current balance"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handleRecalculate}
                   disabled={isRecalculating}
-                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   title="Recalculate forecast"
                 >
                   {isRecalculating ? "Calculating..." : "Recalculate"}
                 </button>
                 <button
                   onClick={() => setShowResetConfirmation(true)}
-                  className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   title="Reset all forecast settings to defaults"
                 >
                   Reset All
@@ -274,93 +283,111 @@ export default function ForecastPage() {
                       alert("Failed to save forecast configuration");
                     }
                   }}
-                  className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   title="Save current forecast configuration"
                 >
                   Save Config
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Conservative Mode
-              </label>
-              <input
-                type="checkbox"
-                checked={localConfig.conservativeMode}
-                onChange={(e) =>
-                  updateConfig({
-                    conservativeMode: e.target.checked,
-                  })
-                }
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Start Date
-              </label>
-              <div className="flex items-center space-x-1">
-                <input
-                  type="month"
-                  value={localConfig.startDate}
+
+            {/* Row 2: Date and Period Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-fit">
+                  Start Date
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="month"
+                    value={localConfig.startDate}
+                    onChange={(e) =>
+                      updateConfig({
+                        startDate: e.target.value,
+                      })
+                    }
+                    className="flex-1 px-3 py-2 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                    title="Select forecast start month"
+                  />
+                  <button
+                    onClick={() =>
+                      updateConfig({
+                        startDate: new Date().toISOString().slice(0, 7),
+                      })
+                    }
+                    className="px-3 py-2 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    title="Reset to current month"
+                  >
+                    Now
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-fit">
+                  Forecast Period
+                </label>
+                <select
+                  value={localConfig.months}
                   onChange={(e) =>
                     updateConfig({
-                      startDate: e.target.value,
+                      months: parseInt(e.target.value),
                     })
                   }
-                  className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-                  title="Select forecast start month"
-                />
-                <button
-                  onClick={() =>
-                    updateConfig({
-                      startDate: new Date().toISOString().slice(0, 7),
-                    })
-                  }
-                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-                  title="Reset to current month"
+                  className="flex-1 px-3 py-2 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                 >
-                  Now
-                </button>
+                  <option value={6}>6 months</option>
+                  <option value={12}>1 year (12 months)</option>
+                  <option value={18}>1.5 years (18 months)</option>
+                  <option value={24}>2 years (24 months)</option>
+                  <option value={36}>3 years (36 months)</option>
+                  <option value={48}>4 years (48 months)</option>
+                  <option value={60}>5 years (60 months)</option>
+                </select>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Include Goals
-              </label>
-              <input
-                type="checkbox"
-                checked={localConfig.includeGoalContributions}
-                onChange={(e) =>
-                  updateConfig({
-                    includeGoalContributions: e.target.checked,
-                  })
-                }
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Forecast Period
-              </label>
-              <select
-                value={localConfig.months}
-                onChange={(e) =>
-                  updateConfig({
-                    months: parseInt(e.target.value),
-                  })
-                }
-                className="rounded border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-              >
-                <option value={6}>6 months</option>
-                <option value={12}>1 year (12 months)</option>
-                <option value={18}>1.5 years (18 months)</option>
-                <option value={24}>2 years (24 months)</option>
-                <option value={36}>3 years (36 months)</option>
-                <option value={48}>4 years (48 months)</option>
-                <option value={60}>5 years (60 months)</option>
-              </select>
+
+            {/* Row 3: Toggle Options */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="conservativeMode"
+                  checked={localConfig.conservativeMode}
+                  onChange={(e) =>
+                    updateConfig({
+                      conservativeMode: e.target.checked,
+                    })
+                  }
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="conservativeMode"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Conservative Mode
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="includeGoals"
+                  checked={localConfig.includeGoalContributions}
+                  onChange={(e) =>
+                    updateConfig({
+                      includeGoalContributions: e.target.checked,
+                    })
+                  }
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="includeGoals"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Include Goals
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -593,13 +620,193 @@ export default function ForecastPage() {
                       {formatCurrency(month.startingBalance)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
-                      +{formatCurrency(month.income)}
+                      <div className="flex items-center gap-2">
+                        <span>+{formatCurrency(month.income)}</span>
+                        {month.incomeBreakdown.length > 0 && (
+                          <div className="relative group">
+                            <svg
+                              className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+
+                            {/* Tooltip */}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                              <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-lg min-w-max max-w-xs border border-gray-600 dark:border-gray-500">
+                                <div className="font-semibold mb-2 text-center">
+                                  {formatMonth(month.month)} Income
+                                </div>
+                                <div className="space-y-1 max-h-40 overflow-y-auto">
+                                  {month.incomeBreakdown.map((income, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex justify-between items-center gap-4"
+                                    >
+                                      <span className="text-gray-300 truncate">
+                                        {income.name}
+                                      </span>
+                                      <span className="font-medium text-green-300 whitespace-nowrap">
+                                        +{formatCurrency(income.amount)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="border-t border-gray-600 dark:border-gray-500 mt-2 pt-2">
+                                  <div className="flex justify-between items-center font-semibold">
+                                    <span>Total</span>
+                                    <span className="text-green-300">
+                                      +{formatCurrency(month.income)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Tooltip arrow pointing up */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-700"></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400">
-                      -{formatCurrency(month.expenses)}
+                      <div className="flex items-center gap-2">
+                        <span>-{formatCurrency(month.expenses)}</span>
+                        {month.expenseBreakdown.length > 0 && (
+                          <div className="relative group">
+                            <svg
+                              className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+
+                            {/* Tooltip */}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                              <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-lg min-w-max max-w-xs border border-gray-600 dark:border-gray-500">
+                                <div className="font-semibold mb-2 text-center">
+                                  {formatMonth(month.month)} Expenses
+                                </div>
+                                <div className="space-y-1 max-h-40 overflow-y-auto">
+                                  {month.expenseBreakdown.map(
+                                    (expense, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex justify-between items-center gap-4"
+                                      >
+                                        <div className="text-gray-300 truncate">
+                                          <span>{expense.name}</span>
+                                          {expense.installmentInfo
+                                            ?.isInstallment && (
+                                            <span className="text-xs text-blue-300 ml-2">
+                                              (
+                                              {
+                                                expense.installmentInfo
+                                                  .currentMonth
+                                              }
+                                              /
+                                              {
+                                                expense.installmentInfo
+                                                  .totalMonths
+                                              }
+                                              )
+                                            </span>
+                                          )}
+                                        </div>
+                                        <span className="font-medium text-red-300 whitespace-nowrap">
+                                          -{formatCurrency(expense.amount)}
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                                <div className="border-t border-gray-600 dark:border-gray-500 mt-2 pt-2">
+                                  <div className="flex justify-between items-center font-semibold">
+                                    <span>Total</span>
+                                    <span className="text-red-300">
+                                      -{formatCurrency(month.expenses)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Tooltip arrow pointing up */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-700"></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 dark:text-blue-400">
-                      -{formatCurrency(month.goalContributions)}
+                      <div className="flex items-center gap-2">
+                        <span>-{formatCurrency(month.goalContributions)}</span>
+                        {month.goalBreakdown.length > 0 && (
+                          <div className="relative group">
+                            <svg
+                              className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+
+                            {/* Tooltip */}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                              <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-lg min-w-max max-w-xs border border-gray-600 dark:border-gray-500">
+                                <div className="font-semibold mb-2 text-center">
+                                  {formatMonth(month.month)} Goal Contributions
+                                </div>
+                                <div className="space-y-1 max-h-40 overflow-y-auto">
+                                  {month.goalBreakdown.map((goal, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex justify-between items-center gap-4"
+                                    >
+                                      <span className="text-gray-300 truncate">
+                                        {goal.name}
+                                      </span>
+                                      <span className="font-medium text-blue-300 whitespace-nowrap">
+                                        -{formatCurrency(goal.amount)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="border-t border-gray-600 dark:border-gray-500 mt-2 pt-2">
+                                  <div className="flex justify-between items-center font-semibold">
+                                    <span>Total</span>
+                                    <span className="text-blue-300">
+                                      -{formatCurrency(month.goalContributions)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Tooltip arrow pointing up */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-700"></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td
                       className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${getBalanceColor(

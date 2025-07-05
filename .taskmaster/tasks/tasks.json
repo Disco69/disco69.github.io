@@ -766,7 +766,7 @@
         "description": "Enhance the Financial Goals module with a detailed monthly goal allocation breakdown, including a calendar view, scheduling, visual indicators, and export functionality.",
         "details": "Implement a new section within the Financial Goals module dedicated to monthly goal allocation. This section should display a detailed breakdown of when and how much money to allocate to each goal on a month-by-month basis. \n\n**Key Features:**\n1.  **Monthly Breakdown Table/List:** Create a clear table or list view showing each month, the goals targeted for that month, and the recommended allocation amount for each goal.\n2.  **Calendar/Timeline View:** Develop an interactive calendar or timeline visualization that visually represents the monthly goal allocations. This could involve highlighting specific months with allocation amounts or using a Gantt-chart-like representation.\n3.  **Goal Allocation Scheduling Logic:** Integrate with the existing smart goal allocation logic (Task 18) and financial forecast (Task 8) to generate realistic and optimized month-by-month allocation recommendations. This logic should consider goal priorities, target dates, current progress, and projected income/expenses.\n4.  **Visual Indicators:** Add visual cues (e.g., color-coding, icons, progress bars) to indicate optimal allocation timing, potential shortfalls, or successful allocations.\n5.  **Actionable Guidance:** Provide concise, month-specific guidance messages (e.g., 'In March, allocate ฿2,000 to Goal A and ฿1,500 to Goal B') directly within the breakdown or calendar view.\n6.  **Integration with Smart Goal Allocation:** Ensure seamless integration with the 'Implement Smart Goal Progress Tracking and Allocation' (Task 18) to leverage its priority system and forecast-based calculations for generating the monthly breakdown.\n7.  **Export Functionality:** Implement a feature to export the generated monthly goal allocation schedule (e.g., to CSV or PDF format). This will require considering data formatting for export.\n\n**Technical Considerations:**\n*   Utilize existing financial data from `FinancialContext` (Task 3) and the financial forecast (Task 8).\n*   Design a user-friendly interface that clearly presents complex allocation data.\n*   Ensure responsiveness for various screen sizes.\n*   Consider performance implications for generating and displaying detailed monthly data over extended periods.",
         "testStrategy": "1.  **Verify Monthly Breakdown Accuracy:**\n    *   Create multiple goals with varying target amounts, target dates, and priorities.\n    *   Input diverse income and expense scenarios.\n    *   Verify that the monthly allocation breakdown accurately reflects the smart allocation logic, distributing funds correctly across months and goals based on priorities and forecast.\n    *   Test edge cases (e.g., insufficient funds, goals already met).\n2.  **Validate Calendar/Timeline View:**\n    *   Confirm that the calendar/timeline view visually represents the monthly allocations correctly, showing the right amounts in the right months.\n    *   Test interactivity (if applicable) and ensure visual indicators are displayed as expected.\n3.  **Test Actionable Guidance:**\n    *   Verify that the month-specific guidance messages are accurate, clear, and align with the displayed allocations.\n4.  **Confirm Smart Allocation Integration:**\n    *   Modify goal priorities and observe if the monthly breakdown adjusts accordingly.\n    *   Change income/expense data and verify that the allocation schedule updates to reflect the new financial forecast.\n5.  **Test Export Functionality:**\n    *   Generate a monthly allocation schedule.\n    *   Attempt to export the schedule to CSV/PDF.\n    *   Open the exported file and verify that the data is correctly formatted and complete, matching the on-screen display.\n6.  **UI/UX Review:**\n    *   Ensure the new features are intuitive, easy to understand, and visually consistent with the rest of the application's design language. Check responsiveness across devices.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           4,
           5,
@@ -782,7 +782,7 @@
             "title": "Design Monthly Goal Allocation Calendar UI",
             "description": "Create calendar/timeline UI component for monthly goal allocation display",
             "details": "Design visual calendar showing month-by-month goal allocation recommendations",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 21
           },
@@ -791,7 +791,7 @@
             "title": "Implement Goal Allocation Scheduling Algorithm",
             "description": "Create algorithm for scheduling goal allocations based on priority and surplus",
             "details": "Develop logic to determine optimal monthly allocation amounts for each goal",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 21
           },
@@ -800,7 +800,7 @@
             "title": "Create Month-by-Month Allocation Breakdown",
             "description": "Display detailed allocation breakdown showing specific amounts per month per goal",
             "details": "Show clear breakdown like 'March: ฿2,000 to Emergency Fund, ฿1,500 to Vacation'",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               1,
               2
@@ -812,7 +812,7 @@
             "title": "Add Export Functionality for Allocation Schedule",
             "description": "Implement export functionality for goal allocation schedule",
             "details": "Allow users to export monthly allocation schedule as PDF or CSV",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               3
             ],
@@ -1009,7 +1009,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-05T06:00:13.234Z",
+      "updated": "2025-07-05T06:14:24.518Z",
       "description": "Tasks for master context"
     }
   }

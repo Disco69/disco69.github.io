@@ -1,4 +1,12 @@
-import { UserPlan, Income, Expense, Goal, Frequency } from "@/types";
+import {
+  UserPlan,
+  Income,
+  Expense,
+  Goal,
+  Frequency,
+  ForecastConfig,
+} from "@/types";
+import { ForecastResult, generateForecast } from "./forecastCalculator";
 
 /**
  * Export format options
@@ -423,4 +431,397 @@ export function validateExportData(userPlan: UserPlan): {
   }
 
   return { isValid: errors.length === 0, errors };
+}
+
+/**
+ * Monthly Goal Allocation Export Data
+ */
+export interface MonthlyGoalAllocationData {
+  month: string;
+  monthLabel: string;
+  goalBreakdown: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    progressPercent?: number;
+    newTotal?: number;
+    targetAmount?: number;
+    goalType?: string;
+    isCompleted?: boolean;
+  }>;
+  totalAllocation: number;
+  surplus: number;
+  remainingSurplus: number;
+}
+
+/**
+ * Export monthly goal allocation schedule to CSV
+ */
+export function exportGoalAllocationToCSV(
+  userPlan: UserPlan,
+  options: CSVExportOptions = DEFAULT_CSV_OPTIONS
+): string {
+  // Use the same forecast configuration as the forecast page
+  const forecastConfig = userPlan.forecastConfig || {
+    startingBalance: userPlan.currentBalance || 0,
+    startDate: new Date().toISOString().slice(0, 7),
+    months: 12,
+    includeGoalContributions: true,
+    conservativeMode: false,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const convertToUtilsConfig = (config: ForecastConfig) => ({
+    months: config.months,
+    startingBalance: config.startingBalance,
+    startDate: config.startDate
+      ? new Date(config.startDate + "-01")
+      : undefined,
+    includeGoalContributions: config.includeGoalContributions,
+    conservativeMode: config.conservativeMode,
+  });
+
+  const forecastResult: ForecastResult = generateForecast(
+    userPlan,
+    convertToUtilsConfig(forecastConfig)
+  );
+
+  // Create a map to track cumulative allocations for each goal
+  const goalTracker = new Map<string, number>();
+  userPlan.goals.forEach((goal) => {
+    goalTracker.set(goal.id, goal.currentAmount);
+  });
+
+  const allocationData: MonthlyGoalAllocationData[] =
+    forecastResult.monthlyForecasts.map((month) => {
+      const surplus = month.income - month.expenses;
+
+      // Calculate percentage progress for each goal allocation in this month
+      const enhancedGoalBreakdown = month.goalBreakdown.map(
+        (goalAllocation) => {
+          // Find the corresponding goal
+          const goal = userPlan.goals.find((g) => g.id === goalAllocation.id);
+          if (!goal)
+            return {
+              ...goalAllocation,
+              progressPercent: 0,
+              newTotal: 0,
+              targetAmount: 0,
+              goalType: "fixed_amount",
+              isCompleted: false,
+            };
+
+          // Update the tracker with this month's allocation
+          const currentAmount = goalTracker.get(goal.id) || 0;
+          const newTotal = currentAmount + goalAllocation.amount;
+          goalTracker.set(goal.id, newTotal);
+
+          // Calculate percentage progress
+          const progressPercent =
+            goal.goalType === "fixed_amount"
+              ? Math.min(100, (newTotal / goal.targetAmount) * 100)
+              : 0; // Open-ended goals don't have a percentage
+
+          return {
+            ...goalAllocation,
+            progressPercent: Math.round(progressPercent * 10) / 10, // Round to 1 decimal
+            newTotal: newTotal,
+            targetAmount: goal.targetAmount,
+            goalType: goal.goalType,
+            isCompleted:
+              goal.goalType === "fixed_amount" && newTotal >= goal.targetAmount,
+          };
+        }
+      );
+
+      return {
+        month: month.month,
+        monthLabel: formatMonth(month.month),
+        goalBreakdown: enhancedGoalBreakdown,
+        totalAllocation: month.goalContributions,
+        surplus,
+        remainingSurplus: Math.max(0, surplus - month.goalContributions),
+      };
+    });
+
+  const csvSections: string[] = [];
+
+  // Add metadata section
+  csvSections.push("# Monthly Goal Allocation Schedule Export");
+  csvSections.push(`# Exported: ${new Date().toISOString()}`);
+  csvSections.push(`# Period: ${allocationData.length} months`);
+  csvSections.push("");
+
+  // Main allocation table
+  csvSections.push("## MONTHLY ALLOCATION SCHEDULE");
+  const headers = [
+    "Month",
+    "Month Name",
+    "Goal Allocations",
+    "Total Allocation",
+    "Available Surplus",
+    "Remaining Surplus",
+    "Guidance",
+  ];
+
+  const rows = allocationData.map((monthData) => [
+    monthData.month,
+    escapeCSVValue(monthData.monthLabel),
+    escapeCSVValue(
+      monthData.goalBreakdown
+        .map((goal) => `${goal.name}: ${formatCurrency(goal.amount)}`)
+        .join("; ") || "No allocations"
+    ),
+    formatCurrency(monthData.totalAllocation),
+    formatCurrency(monthData.surplus),
+    formatCurrency(monthData.remainingSurplus),
+    monthData.goalBreakdown.length > 0
+      ? "Goals funded"
+      : monthData.surplus > 0
+      ? "Surplus available"
+      : "No surplus",
+  ]);
+
+  csvSections.push(formatCSVSection(headers, rows, options));
+  csvSections.push("");
+
+  // Detailed goal breakdown
+  csvSections.push("## DETAILED GOAL BREAKDOWN");
+  const detailHeaders = [
+    "Month",
+    "Goal Name",
+    "Allocation Amount",
+    "Progress %",
+    "New Total",
+    "Target Amount",
+    "Goal Type",
+    "Status",
+  ];
+  const detailRows: string[][] = [];
+
+  allocationData.forEach((monthData) => {
+    if (monthData.goalBreakdown.length > 0) {
+      monthData.goalBreakdown.forEach((goal) => {
+        detailRows.push([
+          monthData.month,
+          escapeCSVValue(goal.name),
+          formatCurrency(goal.amount),
+          goal.progressPercent ? `${goal.progressPercent}%` : "N/A",
+          goal.newTotal ? formatCurrency(goal.newTotal) : "N/A",
+          goal.targetAmount ? formatCurrency(goal.targetAmount) : "N/A",
+          goal.goalType === "fixed_amount" ? "Fixed Amount" : "Open-ended",
+          goal.isCompleted ? "Completed" : "In Progress",
+        ]);
+      });
+    } else {
+      detailRows.push([
+        monthData.month,
+        "No allocations",
+        formatCurrency(0),
+        "N/A",
+        "N/A",
+        "N/A",
+        "N/A",
+        "N/A",
+      ]);
+    }
+  });
+
+  csvSections.push(formatCSVSection(detailHeaders, detailRows, options));
+  csvSections.push("");
+
+  // Summary statistics
+  csvSections.push("## SUMMARY STATISTICS");
+  const totalAllocations = allocationData.reduce(
+    (sum, month) => sum + month.totalAllocation,
+    0
+  );
+  const averageMonthlyAllocation = totalAllocations / allocationData.length;
+  const totalSurplus = allocationData.reduce(
+    (sum, month) => sum + month.surplus,
+    0
+  );
+  const totalRemainingSurplus = allocationData.reduce(
+    (sum, month) => sum + month.remainingSurplus,
+    0
+  );
+
+  const summaryHeaders = ["Metric", "Value"];
+  const summaryRows = [
+    ["Total Allocated to Goals", formatCurrency(totalAllocations)],
+    ["Average Monthly Allocation", formatCurrency(averageMonthlyAllocation)],
+    ["Total Available Surplus", formatCurrency(totalSurplus)],
+    ["Total Remaining Surplus", formatCurrency(totalRemainingSurplus)],
+    [
+      "Allocation Efficiency",
+      `${
+        totalSurplus > 0
+          ? ((totalAllocations / totalSurplus) * 100).toFixed(1)
+          : 0
+      }%`,
+    ],
+    [
+      "Months with Allocations",
+      allocationData.filter((m) => m.totalAllocation > 0).length.toString(),
+    ],
+    [
+      "Goals in Schedule",
+      Array.from(
+        new Set(
+          allocationData.flatMap((m) => m.goalBreakdown.map((g) => g.name))
+        )
+      ).length.toString(),
+    ],
+  ];
+
+  csvSections.push(formatCSVSection(summaryHeaders, summaryRows, options));
+
+  return csvSections.join("\n");
+}
+
+/**
+ * Export monthly goal allocation schedule to JSON
+ */
+export function exportGoalAllocationToJSON(userPlan: UserPlan): string {
+  // Use the same forecast configuration as the forecast page
+  const forecastConfig = userPlan.forecastConfig || {
+    startingBalance: userPlan.currentBalance || 0,
+    startDate: new Date().toISOString().slice(0, 7),
+    months: 12,
+    includeGoalContributions: true,
+    conservativeMode: false,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const convertToUtilsConfig = (config: ForecastConfig) => ({
+    months: config.months,
+    startingBalance: config.startingBalance,
+    startDate: config.startDate
+      ? new Date(config.startDate + "-01")
+      : undefined,
+    includeGoalContributions: config.includeGoalContributions,
+    conservativeMode: config.conservativeMode,
+  });
+
+  const forecastResult = generateForecast(
+    userPlan,
+    convertToUtilsConfig(forecastConfig)
+  );
+
+  // Create a map to track cumulative allocations for each goal
+  const goalTracker = new Map<string, number>();
+  userPlan.goals.forEach((goal) => {
+    goalTracker.set(goal.id, goal.currentAmount);
+  });
+
+  const allocationData: MonthlyGoalAllocationData[] =
+    forecastResult.monthlyForecasts.map((month) => {
+      const surplus = month.income - month.expenses;
+
+      // Calculate percentage progress for each goal allocation in this month
+      const enhancedGoalBreakdown = month.goalBreakdown.map(
+        (goalAllocation) => {
+          // Find the corresponding goal
+          const goal = userPlan.goals.find((g) => g.id === goalAllocation.id);
+          if (!goal)
+            return {
+              ...goalAllocation,
+              progressPercent: 0,
+              newTotal: 0,
+              targetAmount: 0,
+              goalType: "fixed_amount",
+              isCompleted: false,
+            };
+
+          // Update the tracker with this month's allocation
+          const currentAmount = goalTracker.get(goal.id) || 0;
+          const newTotal = currentAmount + goalAllocation.amount;
+          goalTracker.set(goal.id, newTotal);
+
+          // Calculate percentage progress
+          const progressPercent =
+            goal.goalType === "fixed_amount"
+              ? Math.min(100, (newTotal / goal.targetAmount) * 100)
+              : 0; // Open-ended goals don't have a percentage
+
+          return {
+            ...goalAllocation,
+            progressPercent: Math.round(progressPercent * 10) / 10, // Round to 1 decimal
+            newTotal: newTotal,
+            targetAmount: goal.targetAmount,
+            goalType: goal.goalType,
+            isCompleted:
+              goal.goalType === "fixed_amount" && newTotal >= goal.targetAmount,
+          };
+        }
+      );
+
+      return {
+        month: month.month,
+        monthLabel: formatMonth(month.month),
+        goalBreakdown: enhancedGoalBreakdown,
+        totalAllocation: month.goalContributions,
+        surplus,
+        remainingSurplus: Math.max(0, surplus - month.goalContributions),
+      };
+    });
+
+  const exportData = {
+    metadata: {
+      exportedAt: new Date().toISOString(),
+      version: "1.0.0",
+      appName: "Finance Planner",
+      dataType: "monthly-goal-allocation",
+      period: `${allocationData.length} months`,
+    },
+    summary: {
+      totalAllocated: allocationData.reduce(
+        (sum, month) => sum + month.totalAllocation,
+        0
+      ),
+      averageMonthlyAllocation:
+        allocationData.reduce((sum, month) => sum + month.totalAllocation, 0) /
+        allocationData.length,
+      totalSurplus: allocationData.reduce(
+        (sum, month) => sum + month.surplus,
+        0
+      ),
+      allocationEfficiency: (() => {
+        const total = allocationData.reduce(
+          (sum, month) => sum + month.surplus,
+          0
+        );
+        const allocated = allocationData.reduce(
+          (sum, month) => sum + month.totalAllocation,
+          0
+        );
+        return total > 0 ? (allocated / total) * 100 : 0;
+      })(),
+    },
+    monthlyAllocations: allocationData,
+    goalProgress: forecastResult.goalProgress,
+  };
+
+  return JSON.stringify(exportData, null, 2);
+}
+
+/**
+ * Helper function to format month for display
+ */
+function formatMonth(monthKey: string): string {
+  const date = new Date(monthKey + "-01");
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+  });
+}
+
+/**
+ * Helper function to format currency values
+ */
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 }

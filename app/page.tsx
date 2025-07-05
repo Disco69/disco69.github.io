@@ -17,7 +17,10 @@ export default function DashboardPage() {
   const { loadUserPlan } = useFinancialActions();
 
   useEffect(() => {
-    loadUserPlan();
+    // Only load if we don't already have data
+    if (!state.userPlan.id) {
+      loadUserPlan();
+    }
   }, []); // Empty dependency array since loadUserPlan is memoized
 
   // Calculate financial metrics

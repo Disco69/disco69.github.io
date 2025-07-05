@@ -194,15 +194,18 @@ export async function createBackup(userPlan: UserPlan): Promise<void> {
  * Migrate older user plan data to include forecast configuration
  */
 function migrateUserPlan(userPlan: any): UserPlan {
+  // Create a deep copy to avoid mutating the original object
+  const migratedUserPlan = { ...userPlan };
+
   // If forecastConfig is missing, add it with default values
-  if (!userPlan.forecastConfig) {
-    userPlan.forecastConfig = {
+  if (!migratedUserPlan.forecastConfig) {
+    migratedUserPlan.forecastConfig = {
       ...initialForecastConfig,
-      startingBalance: userPlan.currentBalance || 0,
+      startingBalance: migratedUserPlan.currentBalance || 0,
     };
   }
 
-  return userPlan as UserPlan;
+  return migratedUserPlan as UserPlan;
 }
 
 /**

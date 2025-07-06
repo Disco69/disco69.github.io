@@ -15,7 +15,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  ProgressChart,
 } from "recharts";
 import { UserPlan, Goal, GoalType, Priority } from "@/types";
 import { generateForecast } from "@/utils/forecastCalculator";
@@ -45,7 +44,7 @@ interface GoalProgressData {
 const COLORS = {
   onTrack: "#10B981",
   behindSchedule: "#EF4444",
-  completed: "#3B82F6",
+  completed: "#10B981",
   openEnded: "#8B5CF6",
 };
 
@@ -319,11 +318,11 @@ export default function GoalProgressChart({
             tick={{ fontSize: 12 }}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="progressPercent"
-            fill={(entry: any) => getGoalColor(entry)}
-            radius={[4, 4, 0, 0]}
-          />
+          <Bar dataKey="progressPercent" radius={[4, 4, 0, 0]}>
+            {goalData.map((goal, index) => (
+              <Cell key={`cell-${index}`} fill={getGoalColor(goal)} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -348,7 +347,7 @@ export default function GoalProgressChart({
               cy="50%"
               labelLine={false}
               label={({ name, percent }) =>
-                `${name}: ${(percent * 100).toFixed(0)}%`
+                `${name}: ${((percent || 0) * 100).toFixed(0)}%`
               }
               outerRadius={80}
               fill="#8884d8"

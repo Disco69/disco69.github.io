@@ -1176,7 +1176,7 @@
         "description": "Fix forecast calculation issues, add settings persistence to import/export, and improve goal progress accuracy.",
         "details": "This task focuses on fixing remaining forecast issues and improving data persistence.\n\n**Key Components:**\n1. **Settings Persistence**: Make starting balance, start date, and forecast period part of import/export file\n2. **Remove Save Config Button**: No longer needed once settings are in import/export\n3. **Fix Goal Progress Calculations**: Goals hitting 100% in December should not show 'behind schedule'\n4. **Fix Progress Bar Colors**: Completed goals should show green, not red progress bars\n5. **Improve Calculation Accuracy**: Ensure all goal progress calculations are accurate",
         "testStrategy": "Test goal progress calculations, verify settings persist in import/export, test progress bar colors for completed and in-progress goals.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           23,
           24
@@ -1197,7 +1197,7 @@
             "title": "Remove Save Config Button",
             "description": "Remove the save config button from forecast page since settings are now persisted",
             "details": "Clean up UI and remove unnecessary save button",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               1
             ],
@@ -1208,7 +1208,7 @@
             "title": "Fix Goal Progress Calculation Logic",
             "description": "Fix goals showing 'behind schedule' when actually completed",
             "details": "Review and fix goal progress calculation logic to properly detect completed goals",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 26
           },
@@ -1217,7 +1217,7 @@
             "title": "Fix Progress Bar Colors",
             "description": "Change completed goals to show green progress bars instead of red",
             "details": "Update progress bar color logic based on goal completion status",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               3
             ],
@@ -1260,7 +1260,7 @@
             "title": "Enhance Monthly Goal Allocation Schedule",
             "description": "Improve visualization and features of the allocation schedule",
             "details": "Add better charts, export options, and planning tools for goal allocations",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               1,
               2
@@ -1372,7 +1372,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-06T08:27:03.383Z",
+      "updated": "2025-07-06T09:06:37.640Z",
       "description": "Tasks for master context"
     }
   }

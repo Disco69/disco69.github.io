@@ -1286,7 +1286,9 @@ export default function DashboardPage() {
                             <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
                                 className={`h-2 rounded-full transition-all duration-300 ${
-                                  isOverdue
+                                  progress >= 100
+                                    ? "bg-green-500 dark:bg-green-400"
+                                    : isOverdue
                                     ? "bg-red-500 dark:bg-red-400"
                                     : isUrgent
                                     ? "bg-yellow-500 dark:bg-yellow-400"

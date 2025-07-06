@@ -89,66 +89,6 @@ export default function SuggestionsPage() {
     );
   }, [state.userPlan]);
 
-  const getPriorityColor = (priority: Priority) => {
-    switch (priority) {
-      case Priority.CRITICAL:
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case Priority.HIGH:
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case Priority.MEDIUM:
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case Priority.LOW:
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
-    }
-  };
-
-  const getPriorityIcon = (priority: Priority) => {
-    switch (priority) {
-      case Priority.CRITICAL:
-        return "🚨";
-      case Priority.HIGH:
-        return "⚠️";
-      case Priority.MEDIUM:
-        return "📋";
-      case Priority.LOW:
-        return "💡";
-      default:
-        return "📝";
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "income":
-        return "💰";
-      case "expense":
-        return "💳";
-      case "goal":
-        return "🎯";
-      case "general":
-        return "📊";
-      default:
-        return "💡";
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "income":
-        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
-      case "expense":
-        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
-      case "goal":
-        return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
-      case "general":
-        return "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800";
-      default:
-        return "bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800";
-    }
-  };
-
   // Format month for display
   const formatMonth = (monthKey: string) => {
     return formatLocalizedMonth(monthKey, language);
@@ -742,44 +682,204 @@ export default function SuggestionsPage() {
         </div>
       )}
 
-      {/* Suggestions List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
-        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl">📊</span>
+      {/* Goal Progress Projections */}
+      {forecastResult && forecastResult.goalProgress.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                🎯 Goal Progress Projections
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                See how your goals will progress based on current allocation
+                plan
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Forecast Period
+              </div>
+              <div className="text-lg font-medium text-blue-600 dark:text-blue-400">
+                {state.userPlan?.forecastConfig?.months || 12} months
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {forecastResult.goalProgress.map((goal) => (
+              <div
+                key={goal.id}
+                className="p-5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+                      {goal.name}
+                    </h4>
+                    <div className="flex items-center gap-4 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Current:</span>{" "}
+                        {formatCurrency(goal.currentAmount)}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Projected:</span>{" "}
+                        {formatCurrency(goal.projectedAmount)}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Target:</span>{" "}
+                        {formatCurrency(goal.targetAmount)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {goal.projectedProgress.toFixed(1)}%
+                    </div>
+                    <div
+                      className={`text-sm font-medium ${
+                        goal.projectedProgress >= 100
+                          ? "text-green-600 dark:text-green-400"
+                          : goal.onTrack
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
+                    >
+                      {goal.projectedProgress >= 100
+                        ? "Will Complete"
+                        : goal.onTrack
+                        ? "On Track"
+                        : "Behind Schedule"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mb-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        goal.projectedProgress >= 100
+                          ? "bg-green-600 dark:bg-green-400"
+                          : goal.onTrack
+                          ? "bg-green-600 dark:bg-green-400"
+                          : "bg-red-600 dark:bg-red-400"
+                      }`}
+                      style={{
+                        width: `${Math.min(goal.projectedProgress, 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span>0%</span>
+                    <span className="font-medium">
+                      {goal.projectedProgress.toFixed(1)}% projected
+                    </span>
+                    <span>100%</span>
+                  </div>
+                </div>
+
+                {/* Goal Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Monthly Allocation
+                    </div>
+                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                      {formatCurrency(goal.averageMonthlyAllocation)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Estimated Completion
+                    </div>
+                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {goal.estimatedCompletionMonth
+                        ? formatMonth(goal.estimatedCompletionMonth)
+                        : "Not determined"}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Remaining Amount
+                    </div>
+                    <div className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+                      {formatCurrency(
+                        Math.max(0, goal.targetAmount - goal.projectedAmount)
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Insights */}
+                {goal.projectedProgress < 100 && !goal.onTrack && (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-600 dark:text-red-400">⚠️</span>
+                      <span className="text-sm text-red-800 dark:text-red-200 font-medium">
+                        This goal may not reach the target on time.
+                      </span>
+                    </div>
+                    <p className="text-sm text-red-700 dark:text-red-300 mt-1 ml-6">
+                      Consider increasing the monthly allocation or adjusting
+                      the target date.
+                    </p>
+                  </div>
+                )}
+
+                {goal.projectedProgress >= 100 && (
+                  <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600 dark:text-green-400">
+                        ✅
+                      </span>
+                      <span className="text-sm text-green-800 dark:text-green-200 font-medium">
+                        This goal will be completed within the forecast period!
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Summary Stats */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {forecastResult.goalProgress.filter((g) => g.onTrack).length}
+              </div>
+              <div className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                Goals On Track
+              </div>
+            </div>
+            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {
+                  forecastResult.goalProgress.filter(
+                    (g) => g.projectedProgress >= 100
+                  ).length
+                }
+              </div>
+              <div className="text-sm text-green-700 dark:text-green-300 font-medium">
+                Will Complete
+              </div>
+            </div>
+            <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {formatCurrency(
+                  forecastResult.goalProgress.reduce(
+                    (sum, goal) => sum + goal.averageMonthlyAllocation,
+                    0
+                  )
+                )}
+              </div>
+              <div className="text-sm text-orange-700 dark:text-orange-300 font-medium">
+                Total Monthly Allocation
+              </div>
+            </div>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          Suggestions Moved to Dashboard
-        </h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
-          All financial suggestions are now integrated into your main dashboard
-          for easier access and better overview.
-        </p>
-        <div className="space-y-3">
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            View Suggestions on Dashboard
-            <svg
-              className="w-4 h-4 ml-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Link>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Your suggestions include personalized recommendations, priority
-            levels, and actionable insights all in one place.
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Tips Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

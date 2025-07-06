@@ -13,7 +13,7 @@ import { formatDateWithTranslations } from "@/utils/dateFormatting";
 import { ForecastConfig } from "@/types";
 
 export default function ForecastPage() {
-  const { state, updateForecastConfig, saveUserPlan } = useFinancialContext();
+  const { state, updateForecastConfig } = useFinancialContext();
   const { formatCurrency } = useCurrency();
   const { t } = useLanguage();
   const [localConfig, setLocalConfig] = useState<ForecastConfig>(
@@ -277,20 +277,6 @@ export default function ForecastPage() {
                   title="Reset all forecast settings to defaults"
                 >
                   Reset All
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      await saveUserPlan();
-                      alert("Forecast configuration saved successfully!");
-                    } catch {
-                      alert("Failed to save forecast configuration");
-                    }
-                  }}
-                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  title="Save current forecast configuration"
-                >
-                  Save Config
                 </button>
               </div>
             </div>
@@ -995,7 +981,9 @@ export default function ForecastPage() {
                   <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${
-                        goal.onTrack
+                        goal.projectedProgress >= 100
+                          ? "bg-green-600 dark:bg-green-400"
+                          : goal.onTrack
                           ? "bg-green-600 dark:bg-green-400"
                           : "bg-red-600 dark:bg-red-400"
                       }`}

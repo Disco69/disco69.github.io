@@ -1014,7 +1014,22 @@ export function generateForecast(
       estimatedCompletionMonth = completionForecast.estimatedCompletionMonth;
     }
 
-    const onTrack = completionForecast.isAchievable;
+    // Determine if goal is on track
+    let onTrack: boolean;
+
+    if (goal.goalType === GoalType.OPEN_ENDED) {
+      // Open-ended goals are always considered on track
+      onTrack = true;
+    } else if (goal.currentAmount >= goal.targetAmount) {
+      // Goal is already completed - always on track regardless of target date
+      onTrack = true;
+    } else if (projectedAmount >= goal.targetAmount) {
+      // Goal will be completed by the forecast period - on track
+      onTrack = true;
+    } else {
+      // Use completion forecast logic for incomplete goals
+      onTrack = completionForecast.isAchievable;
+    }
 
     return {
       id: goal.id,

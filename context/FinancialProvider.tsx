@@ -12,6 +12,7 @@ import React, {
   useContext,
   useReducer,
   useCallback,
+  useEffect,
 } from "react";
 import {
   FinancialState,
@@ -79,6 +80,86 @@ export function FinancialProvider({
       ? mergeWithInitialState(initialState)
       : createFreshInitialState()
   );
+
+  // Auto-load user plan on mount (for any page)
+  useEffect(() => {
+    // Load user plan if we have the default state (no real data loaded yet)
+    if (
+      state.userPlan.id === "default-plan" &&
+      state.userPlan.income.length === 0 &&
+      state.userPlan.expenses.length === 0 &&
+      state.userPlan.goals.length === 0
+    ) {
+      const loadData = async () => {
+        try {
+          dispatch(actions.setLoading(true));
+          dispatch(actions.clearError("generalError"));
+
+          // Import storage function dynamically to avoid SSR issues
+          const { loadUserPlan: loadFromStorage } = await import("./storage");
+          const loadedPlan = await loadFromStorage();
+
+          if (loadedPlan) {
+            dispatch(actions.loadSuccess(loadedPlan));
+          } else {
+            dispatch(actions.setLoading(false));
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to load user plan";
+          dispatch(actions.loadError(errorMessage));
+        }
+      };
+
+      loadData();
+    }
+  }, []); // Empty dependency array - only run on mount
+
+  // Auto-save user plan when data changes
+  useEffect(() => {
+    // Only auto-save if:
+    // 1. We have real data (not default empty state) OR we have default plan with actual data
+    // 2. We're not currently loading
+    // 3. We have unsaved changes
+    const hasRealData =
+      state.userPlan.id !== "default-plan" ||
+      state.userPlan.income.length > 0 ||
+      state.userPlan.expenses.length > 0 ||
+      state.userPlan.goals.length > 0;
+
+    if (
+      hasRealData &&
+      !state.loading.isLoading &&
+      !state.loading.isSaving &&
+      state.hasUnsavedChanges
+    ) {
+      const saveData = async () => {
+        try {
+          const { saveUserPlan: saveToStorage } = await import("./storage");
+          const savedPlan = await saveToStorage(state.userPlan);
+
+          // If the ID changed (first save), update the state
+          if (savedPlan.id !== state.userPlan.id) {
+            dispatch(actions.setUserPlan(savedPlan));
+          }
+
+          dispatch(actions.saveSuccess());
+        } catch (error) {
+          console.error("Auto-save failed:", error);
+          // Don't dispatch error to avoid disrupting user experience
+        }
+      };
+
+      // Debounce auto-save to avoid excessive saves
+      const timeoutId = setTimeout(saveData, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [
+    state.userPlan,
+    state.hasUnsavedChanges,
+    state.loading.isLoading,
+    state.loading.isSaving,
+  ]);
 
   // Helper function to generate unique IDs
   const generateId = useCallback((prefix: string) => {
@@ -391,7 +472,12 @@ export function FinancialProvider({
 
       // Import storage function dynamically to avoid SSR issues
       const { saveUserPlan: saveToStorage } = await import("./storage");
-      await saveToStorage(state.userPlan);
+      const savedPlan = await saveToStorage(state.userPlan);
+
+      // If the ID changed (first save), update the state
+      if (savedPlan.id !== state.userPlan.id) {
+        dispatch(actions.setUserPlan(savedPlan));
+      }
 
       dispatch(actions.saveSuccess());
     } catch (error) {

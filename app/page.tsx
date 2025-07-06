@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
-import { useFinancialState, useFinancialActions } from "@/context";
+import { useFinancialState } from "@/context";
 import { Frequency, ExpenseCategory, GoalCategory, Priority } from "@/types";
 import {
   generateSuggestions,
@@ -19,16 +19,8 @@ import { generateForecast } from "@/utils/forecastCalculator";
 
 export default function DashboardPage() {
   const state = useFinancialState();
-  const { loadUserPlan } = useFinancialActions();
   const { formatCurrency } = useCurrency();
   const { t } = useLanguage();
-
-  useEffect(() => {
-    // Only load if we don't already have data
-    if (!state.userPlan.id) {
-      loadUserPlan();
-    }
-  }, []); // Empty dependency array since loadUserPlan is memoized
 
   // Calculate financial metrics
   const calculateMonthlyAmount = (amount: number, frequency: Frequency) => {

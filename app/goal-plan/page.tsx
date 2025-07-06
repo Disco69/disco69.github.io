@@ -7,7 +7,6 @@ import {
   generateSuggestions,
   DEFAULT_SUGGESTION_CONFIG,
 } from "@/utils/suggestionGenerator";
-import { formatCurrency } from "@/utils/currency";
 import {
   generateForecast,
   ForecastResult,
@@ -15,11 +14,13 @@ import {
 } from "@/utils/forecastCalculator";
 import { ForecastConfig } from "@/types";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { formatLocalizedMonth } from "@/utils/dateFormatting";
 
 export default function SuggestionsPage() {
   const state = useFinancialState();
   const { language } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [showGoalAllocation, setShowGoalAllocation] = useState(true);
   const [allocationViewMode, setAllocationViewMode] = useState<
     "calendar" | "table" | "chart"

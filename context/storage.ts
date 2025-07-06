@@ -70,7 +70,7 @@ function safeJsonStringify(data: any): string | null {
 /**
  * Save user plan to localStorage
  */
-export async function saveUserPlan(userPlan: UserPlan): Promise<void> {
+export async function saveUserPlan(userPlan: UserPlan): Promise<UserPlan> {
   if (!isLocalStorageAvailable()) {
     throw new Error("localStorage is not available");
   }
@@ -79,7 +79,22 @@ export async function saveUserPlan(userPlan: UserPlan): Promise<void> {
     // Create backup before saving new data
     await createBackup(userPlan);
 
-    const serialized = safeJsonStringify(userPlan);
+    // Generate a unique ID if this is the first save (default plan)
+    const planToSave =
+      userPlan.id === "default-plan"
+        ? {
+            ...userPlan,
+            id: `user-plan-${Date.now()}-${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
+            updatedAt: new Date().toISOString(),
+          }
+        : {
+            ...userPlan,
+            updatedAt: new Date().toISOString(),
+          };
+
+    const serialized = safeJsonStringify(planToSave);
     if (!serialized) {
       throw new Error("Failed to serialize user plan");
     }
@@ -98,6 +113,7 @@ export async function saveUserPlan(userPlan: UserPlan): Promise<void> {
     );
 
     console.log("✅ User plan saved successfully");
+    return planToSave;
   } catch (error) {
     console.error("❌ Failed to save user plan:", error);
     throw new Error("Failed to save user plan to storage");

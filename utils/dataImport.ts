@@ -333,6 +333,24 @@ function parseExpensesFromCSV(
 }
 
 /**
+ * Convert Priority enum to priority order number
+ */
+function getPriorityOrder(priority: Priority): number {
+  switch (priority) {
+    case Priority.CRITICAL:
+      return 0;
+    case Priority.HIGH:
+      return 1;
+    case Priority.MEDIUM:
+      return 2;
+    case Priority.LOW:
+      return 3;
+    default:
+      return 2; // Default to medium priority
+  }
+}
+
+/**
  * Parse goals data from CSV rows
  */
 function parseGoalsFromCSV(
@@ -368,6 +386,10 @@ function parseGoalsFromCSV(
         category:
           (row[columnMap.Category] as GoalCategory) || GoalCategory.OTHER,
         priority: (row[columnMap.Priority] as Priority) || Priority.MEDIUM,
+        goalType: GoalType.FIXED_AMOUNT,
+        priorityOrder: getPriorityOrder(
+          (row[columnMap.Priority] as Priority) || Priority.MEDIUM
+        ),
         isActive: parseBoolean(row[columnMap["Is Active"]]),
         createdAt: row[columnMap["Created At"]] || new Date().toISOString(),
         updatedAt: row[columnMap["Updated At"]] || new Date().toISOString(),

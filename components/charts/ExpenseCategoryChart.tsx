@@ -324,12 +324,14 @@ export default function ExpenseCategoryChart({
           />
           <Bar
             dataKey="amount"
-            fill={(entry: any) => entry.color}
-            onClick={(data) =>
-              setSelectedCategory(
-                selectedCategory === data.category ? null : data.category
-              )
-            }
+            onClick={(data: any) => {
+              const category = data?.payload?.category;
+              if (category) {
+                setSelectedCategory(
+                  selectedCategory === category ? null : category
+                );
+              }
+            }}
             style={{ cursor: "pointer" }}
           >
             {categoryData.map((entry, index) => (
@@ -359,7 +361,6 @@ export default function ExpenseCategoryChart({
           <Treemap
             data={treemapData}
             dataKey="value"
-            ratio={4 / 3}
             stroke="#fff"
             fill="#8884d8"
           >

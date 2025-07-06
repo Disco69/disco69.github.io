@@ -199,18 +199,21 @@ export function mergeWithInitialState(
  */
 export function validateState(state: unknown): state is FinancialState {
   try {
+    if (!state || typeof state !== "object" || state === null) {
+      return false;
+    }
+
+    const stateObj = state as Record<string, unknown>;
+
     return (
-      state &&
-      typeof state === "object" &&
-      state !== null &&
-      "userPlan" in state &&
-      "financialSummary" in state &&
-      "loading" in state &&
-      "error" in state &&
-      "lastUpdated" in state &&
-      typeof (state as any).lastUpdated === "string" &&
-      "hasUnsavedChanges" in state &&
-      typeof (state as any).hasUnsavedChanges === "boolean"
+      "userPlan" in stateObj &&
+      "financialSummary" in stateObj &&
+      "loading" in stateObj &&
+      "error" in stateObj &&
+      "lastUpdated" in stateObj &&
+      typeof stateObj.lastUpdated === "string" &&
+      "hasUnsavedChanges" in stateObj &&
+      typeof stateObj.hasUnsavedChanges === "boolean"
     );
   } catch {
     return false;

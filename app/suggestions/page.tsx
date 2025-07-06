@@ -18,6 +18,7 @@ import {
 import { ForecastConfig } from "@/types";
 import { useLanguage } from "@/context/LanguageContext";
 import { formatLocalizedMonth } from "@/utils/dateFormatting";
+import Link from "next/link";
 
 export default function SuggestionsPage() {
   const state = useFinancialState();
@@ -742,100 +743,42 @@ export default function SuggestionsPage() {
       )}
 
       {/* Suggestions List */}
-      <div className="space-y-6">
-        {suggestions.length > 0 ? (
-          suggestions.map((suggestion) => (
-            <div
-              key={suggestion.id}
-              className={`rounded-lg border-2 p-6 transition-all duration-200 hover:shadow-md ${getCategoryColor(
-                suggestion.category
-              )}`}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl">📊</span>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Suggestions Moved to Dashboard
+        </h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          All financial suggestions are now integrated into your main dashboard
+          for easier access and better overview.
+        </p>
+        <div className="space-y-3">
+          <Link
+            href="/"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            View Suggestions on Dashboard
+            <svg
+              className="w-4 h-4 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4 flex-1">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-2xl shadow-sm">
-                      {getCategoryIcon(suggestion.category)}
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {suggestion.title}
-                      </h3>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                          suggestion.priority
-                        )}`}
-                      >
-                        <span className="mr-1">
-                          {getPriorityIcon(suggestion.priority)}
-                        </span>
-                        {suggestion.priority.toUpperCase()}
-                      </span>
-                      {suggestion.actionable && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          ✅ Actionable
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-gray-700 dark:text-gray-300 mb-4">
-                      {suggestion.description}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium">Category:</span>{" "}
-                          {suggestion.category.charAt(0).toUpperCase() +
-                            suggestion.category.slice(1)}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium">Impact:</span>{" "}
-                          {formatCurrency(suggestion.estimatedImpact)}/month
-                        </div>
-                      </div>
-
-                      {suggestion.actionable && (
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                          Take Action
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🎉</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Great Job!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              No suggestions at the moment. Your financial plan looks solid!
-            </p>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {selectedCategory !== "all" && (
-                <p>
-                  Try viewing all categories or check back later as your
-                  financial situation changes.
-                </p>
-              )}
-              {showOnlyHighPriority && (
-                <p>
-                  Try viewing all priority levels to see additional
-                  recommendations.
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Your suggestions include personalized recommendations, priority
+            levels, and actionable insights all in one place.
+          </p>
+        </div>
       </div>
 
       {/* Tips Section */}

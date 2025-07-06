@@ -1005,11 +1005,257 @@
             "parentTaskId": 23
           }
         ]
+      },
+      {
+        "id": 24,
+        "title": "Global UI/UX Improvements",
+        "description": "Implement comprehensive UI/UX improvements including navigation enhancements, footer update, theme system, currency selection, and multi-language support.",
+        "details": "This task encompasses major UI/UX improvements to create a more professional and internationally accessible application.\n\n**Key Components:**\n1. **Footer Update**: Change footer to show \"2025 Personal Finance Planner by Fang (Thunyut Chienpairoj)\"\n2. **Navigation Enhancement**: Add GitHub icon (link TBD) and LinkedIn icon (https://www.linkedin.com/in/thunyut/)\n3. **Theme System**: Implement Light/Dark theme switcher with dark as default theme\n4. **Currency System**: Add currency selector in navigation with global currency formatting\n5. **Multi-language Support**: Add EN/TH language support with EN as default\n6. **Localization Fixes**: Fix all month names to English (currently showing Thai names)\n7. **Settings Persistence**: Include theme, currency, and language settings in import/export\n8. **Edit UX Improvement**: Fix edit data behavior across pages for better UX when editing long lists",
+        "testStrategy": "Test theme switching, language switching, currency changes, footer display, navigation icons, and edit UX across all pages. Verify settings persist in import/export and localStorage.",
+        "status": "pending",
+        "dependencies": [20],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update Footer and Navigation Icons",
+            "description": "Update footer text and add GitHub/LinkedIn icons to navigation",
+            "details": "Change footer to show proper attribution and add social media icons with proper links",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 24
+          },
+          {
+            "id": 2,
+            "title": "Implement Theme System",
+            "description": "Create Light/Dark theme switcher with dark as default",
+            "details": "Implement theme context, toggle component, and ensure all components support both themes",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 24
+          },
+          {
+            "id": 3,
+            "title": "Add Currency Selection System",
+            "description": "Implement currency selector with global formatting",
+            "details": "Create currency context, selector component, and update all currency displays to use selected currency",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 24
+          },
+          {
+            "id": 4,
+            "title": "Implement Multi-language Support",
+            "description": "Add EN/TH language support with EN as default",
+            "details": "Create i18n system, translation files, and language selector component",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 24
+          },
+          {
+            "id": 5,
+            "title": "Fix Month Names Localization",
+            "description": "Fix all month names to display in English",
+            "details": "Update all month display logic to show English month names consistently",
+            "status": "pending",
+            "dependencies": [4],
+            "parentTaskId": 24
+          },
+          {
+            "id": 6,
+            "title": "Add Settings to Import/Export",
+            "description": "Include theme, currency, and language settings in import/export functionality",
+            "details": "Update UserPlan model and save/load functions to include UI settings",
+            "status": "pending",
+            "dependencies": [2, 3, 4],
+            "parentTaskId": 24
+          },
+          {
+            "id": 7,
+            "title": "Improve Edit Data UX",
+            "description": "Fix edit behavior across pages for better UX with long lists",
+            "details": "Implement auto-scroll to edit panel, better visual feedback, and improved edit form positioning",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 24
+          }
+        ]
+      },
+      {
+        "id": 25,
+        "title": "Dashboard Overhaul",
+        "description": "Completely restructure the dashboard layout, add meaningful statistics, improve goal tracking, and implement first-time user guidance.",
+        "details": "This task involves a comprehensive dashboard redesign to make it more informative and user-friendly.\n\n**Layout Changes:**\n1. **Remove Goal Progress Box**: Remove the current goal progress box from top\n2. **Add Annual Income/Expense Stats**: Show annual income and expense (calculated from forecast starting month for 12 months)\n3. **Add 2 More Stat Boxes**: Create 4 total stat boxes with meaningful financial insights\n4. **Move Quick Actions to Top**: Relocate Quick Actions to top but make it more compact (half height)\n5. **Reorganize Goal Sections**: Move Goal Progress Tracking to bottom, add Upcoming Goals under it\n6. **Replace High Priority Goals**: Change to \"Top Expense Months\" showing 5-10 months with highest expenses\n7. **Replace Priority Suggestions**: Use suggestions from Suggestions page instead of duplicate logic\n8. **First-time User Guidance**: Add tutorial/guidance for users with no data",
+        "testStrategy": "Test with existing data and with no data to verify new layout, stat calculations, and first-time user experience. Verify all moved components function correctly.",
+        "status": "pending",
+        "dependencies": [24],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Annual Income/Expense Statistics",
+            "description": "Add annual income and expense stat boxes calculated from forecast data",
+            "details": "Calculate 12-month totals starting from forecast start month",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 25
+          },
+          {
+            "id": 2,
+            "title": "Design 2 Additional Meaningful Stat Boxes",
+            "description": "Create 2 more insightful statistics for total of 4 stat boxes",
+            "details": "Design meaningful metrics like savings rate, emergency fund ratio, goal completion rate, or expense trend",
+            "status": "pending",
+            "dependencies": [1],
+            "parentTaskId": 25
+          },
+          {
+            "id": 3,
+            "title": "Reorganize Dashboard Layout",
+            "description": "Move Quick Actions to top (compact), Goal Progress to bottom, remove original goal progress box",
+            "details": "Restructure entire dashboard layout according to new specification",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 25
+          },
+          {
+            "id": 4,
+            "title": "Create Top Expense Months Component",
+            "description": "Replace High Priority Goals with Top Expense Months showing 5-10 highest expense months",
+            "details": "Calculate and display months with highest projected expenses",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 25
+          },
+          {
+            "id": 5,
+            "title": "Integrate Suggestions from Suggestions Page",
+            "description": "Replace Priority Suggestions with actual suggestions from Suggestions page",
+            "details": "Remove duplicate suggestion logic and use centralized suggestions",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 25
+          },
+          {
+            "id": 6,
+            "title": "Add Upcoming Goals Section",
+            "description": "Create Upcoming Goals component showing next 6 months under Goal Progress",
+            "details": "Show goals expected to be completed in next 6 months",
+            "status": "pending",
+            "dependencies": [3],
+            "parentTaskId": 25
+          },
+          {
+            "id": 7,
+            "title": "Implement First-time User Guidance",
+            "description": "Add tutorial/guidance system for users with no data",
+            "details": "Create onboarding flow to guide new users through data input process",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 25
+          }
+        ]
+      },
+      {
+        "id": 26,
+        "title": "Forecast Settings and Calculation Fixes",
+        "description": "Fix forecast calculation issues, add settings persistence to import/export, and improve goal progress accuracy.",
+        "details": "This task focuses on fixing remaining forecast issues and improving data persistence.\n\n**Key Components:**\n1. **Settings Persistence**: Make starting balance, start date, and forecast period part of import/export file\n2. **Remove Save Config Button**: No longer needed once settings are in import/export\n3. **Fix Goal Progress Calculations**: Goals hitting 100% in December should not show 'behind schedule'\n4. **Fix Progress Bar Colors**: Completed goals should show green, not red progress bars\n5. **Improve Calculation Accuracy**: Ensure all goal progress calculations are accurate",
+        "testStrategy": "Test goal progress calculations, verify settings persist in import/export, test progress bar colors for completed and in-progress goals.",
+        "status": "pending",
+        "dependencies": [23, 24],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Add Forecast Settings to Import/Export",
+            "description": "Include starting balance, start date, and forecast period in save/load functionality",
+            "details": "Extend UserPlan model to include forecast configuration and update import/export logic",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 26
+          },
+          {
+            "id": 2,
+            "title": "Remove Save Config Button",
+            "description": "Remove the save config button from forecast page since settings are now persisted",
+            "details": "Clean up UI and remove unnecessary save button",
+            "status": "pending",
+            "dependencies": [1],
+            "parentTaskId": 26
+          },
+          {
+            "id": 3,
+            "title": "Fix Goal Progress Calculation Logic",
+            "description": "Fix goals showing 'behind schedule' when actually completed",
+            "details": "Review and fix goal progress calculation logic to properly detect completed goals",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 26
+          },
+          {
+            "id": 4,
+            "title": "Fix Progress Bar Colors",
+            "description": "Change completed goals to show green progress bars instead of red",
+            "details": "Update progress bar color logic based on goal completion status",
+            "status": "pending",
+            "dependencies": [3],
+            "parentTaskId": 26
+          }
+        ]
+      },
+      {
+        "id": 27,
+        "title": "Suggestions Page Reframing",
+        "description": "Reframe the Suggestions page around Monthly Goal Allocation Schedule to make it more insightful and valuable.",
+        "details": "This task transforms the current Suggestions page into a more valuable and insightful experience centered around the Monthly Goal Allocation Schedule.\n\n**Key Components:**\n1. **Center Around Monthly Goal Allocation**: Make the Monthly Goal Allocation Schedule the main feature\n2. **Rename Page**: Change from 'Suggestions' to something more relevant like 'Goal Planning' or 'Allocation Schedule'\n3. **Remove Duplicate Suggestions**: Remove suggestion list since it's moved to Dashboard\n4. **Enhance Allocation Features**: Improve the allocation schedule with better visualization and insights\n5. **Add Planning Tools**: Include tools to help users plan their goal allocations more effectively",
+        "testStrategy": "Test new page layout, verify Monthly Goal Allocation Schedule works correctly, ensure removed suggestions appear properly on Dashboard.",
+        "status": "pending",
+        "dependencies": [25],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Rename and Restructure Page",
+            "description": "Rename page from 'Suggestions' to more relevant name and restructure layout",
+            "details": "Choose appropriate name like 'Goal Planning' or 'Allocation Schedule' and update navigation",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 27
+          },
+          {
+            "id": 2,
+            "title": "Remove Duplicate Suggestions List",
+            "description": "Remove suggestions list since it's moved to Dashboard",
+            "details": "Clean up page by removing duplicate suggestion logic",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 27
+          },
+          {
+            "id": 3,
+            "title": "Enhance Monthly Goal Allocation Schedule",
+            "description": "Improve visualization and features of the allocation schedule",
+            "details": "Add better charts, export options, and planning tools for goal allocations",
+            "status": "pending",
+            "dependencies": [1, 2],
+            "parentTaskId": 27
+          },
+          {
+            "id": 4,
+            "title": "Add Goal Planning Tools",
+            "description": "Add tools to help users plan their goal allocations more effectively",
+            "details": "Include features like 'what-if' scenarios, allocation optimization suggestions, and timeline adjustments",
+            "status": "pending",
+            "dependencies": [3],
+            "parentTaskId": 27
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-05T14:04:48.506Z",
+      "updated": "2025-01-12T14:30:00.000Z",
       "description": "Tasks for master context"
     }
   }

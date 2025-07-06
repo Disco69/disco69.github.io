@@ -13,7 +13,7 @@ export default function Navigation() {
     { href: "/expenses", key: "nav.expenses" },
     { href: "/goals", key: "nav.goals" },
     { href: "/forecast", key: "nav.forecast" },
-    { href: "/suggestions", key: "nav.suggestions" },
+    { href: "/goal-plan", key: "nav.goalPlanning" },
     { href: "/import-export", key: "nav.importExport" },
   ];
 

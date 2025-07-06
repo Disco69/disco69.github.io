@@ -1043,7 +1043,7 @@ export default function DashboardPage() {
                     suggestions
                   </div>
                   <Link
-                    href="/suggestions"
+                    href="/goal-plan"
                     className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
                   >
                     View All Details
@@ -1180,7 +1180,7 @@ export default function DashboardPage() {
               {allSuggestions.length > 6 && (
                 <div className="mt-4 text-center">
                   <Link
-                    href="/suggestions"
+                    href="/goal-plan"
                     className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     View All {allSuggestions.length} Suggestions

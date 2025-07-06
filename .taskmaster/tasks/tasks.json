@@ -1231,7 +1231,7 @@
         "description": "Reframe the Suggestions page around Monthly Goal Allocation Schedule to make it more insightful and valuable.",
         "details": "This task transforms the current Suggestions page into a more valuable and insightful experience centered around the Monthly Goal Allocation Schedule.\n\n**Key Components:**\n1. **Center Around Monthly Goal Allocation**: Make the Monthly Goal Allocation Schedule the main feature\n2. **Rename Page**: Change from 'Suggestions' to something more relevant like 'Goal Planning' or 'Allocation Schedule'\n3. **Remove Duplicate Suggestions**: Remove suggestion list since it's moved to Dashboard\n4. **Enhance Allocation Features**: Improve the allocation schedule with better visualization and insights\n5. **Add Planning Tools**: Include tools to help users plan their goal allocations more effectively",
         "testStrategy": "Test new page layout, verify Monthly Goal Allocation Schedule works correctly, ensure removed suggestions appear properly on Dashboard.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           25
         ],
@@ -1242,7 +1242,7 @@
             "title": "Rename and Restructure Page",
             "description": "Rename page from 'Suggestions' to more relevant name and restructure layout",
             "details": "Choose appropriate name like 'Goal Planning' or 'Allocation Schedule' and update navigation",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 27
           },
@@ -1251,7 +1251,7 @@
             "title": "Remove Duplicate Suggestions List",
             "description": "Remove suggestions list since it's moved to Dashboard",
             "details": "Clean up page by removing duplicate suggestion logic",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 27
           },
@@ -1272,7 +1272,7 @@
             "title": "Add Goal Planning Tools",
             "description": "Add tools to help users plan their goal allocations more effectively",
             "details": "Include features like 'what-if' scenarios, allocation optimization suggestions, and timeline adjustments",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               3
             ],
@@ -1372,7 +1372,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-06T09:06:37.640Z",
+      "updated": "2025-07-06T09:18:03.321Z",
       "description": "Tasks for master context"
     }
   }

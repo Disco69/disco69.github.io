@@ -97,7 +97,7 @@ const translations = {
     "nav.expenses": "Expenses",
     "nav.goals": "Goals",
     "nav.forecast": "Forecast",
-    "nav.suggestions": "Suggestions",
+    "nav.goalPlanning": "Goal Planning",
     "nav.importExport": "Import/Export",
 
     // Dashboard
@@ -156,7 +156,7 @@ const translations = {
     "nav.expenses": "รายจ่าย",
     "nav.goals": "เป้าหมาย",
     "nav.forecast": "พยากรณ์",
-    "nav.suggestions": "คำแนะนำ",
+    "nav.goalPlanning": "วางแผนเป้าหมาย",
     "nav.importExport": "นำเข้า/ส่งออก",
 
     // Dashboard

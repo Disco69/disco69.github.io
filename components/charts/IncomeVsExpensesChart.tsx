@@ -13,7 +13,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { UserPlan } from "@/types";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
 import { generateForecast } from "@/utils/forecastCalculator";
 
 interface IncomeVsExpensesChartProps {
@@ -38,6 +38,7 @@ export default function IncomeVsExpensesChart({
   const [selectedPeriod, setSelectedPeriod] = useState<"6" | "12" | "24">("12");
   const [showProjection, setShowProjection] = useState(true);
   const [focusedLine, setFocusedLine] = useState<string | null>(null);
+  const { formatCurrency } = useCurrency();
 
   // Helper function to format month
   const formatMonth = (monthKey: string) => {

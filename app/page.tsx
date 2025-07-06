@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useFinancialState, useFinancialActions } from "@/context";
 import { Frequency, ExpenseCategory, GoalCategory, Priority } from "@/types";
 import { getHighPrioritySuggestions } from "@/utils/suggestionGenerator";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
 import { isIncomeActiveInMonth } from "@/utils/forecastCalculator";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatDateWithTranslations } from "@/utils/dateFormatting";
 import IncomeVsExpensesChart from "@/components/charts/IncomeVsExpensesChart";
 import GoalProgressChart from "@/components/charts/GoalProgressChart";
 import ExpenseCategoryChart from "@/components/charts/ExpenseCategoryChart";
@@ -15,6 +17,8 @@ import AskAIButton from "@/components/AskAIButton";
 export default function DashboardPage() {
   const state = useFinancialState();
   const { loadUserPlan } = useFinancialActions();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
 
   useEffect(() => {
     // Only load if we don't already have data
@@ -128,10 +132,9 @@ export default function DashboardPage() {
     : [];
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return formatDateWithTranslations(dateString, t, {
+      includeYear: true,
+      shortMonth: true,
     });
   };
 

@@ -1012,8 +1012,10 @@
         "description": "Implement comprehensive UI/UX improvements including navigation enhancements, footer update, theme system, currency selection, and multi-language support.",
         "details": "This task encompasses major UI/UX improvements to create a more professional and internationally accessible application.\n\n**Key Components:**\n1. **Footer Update**: Change footer to show \"2025 Personal Finance Planner by Fang (Thunyut Chienpairoj)\"\n2. **Navigation Enhancement**: Add GitHub icon (link TBD) and LinkedIn icon (https://www.linkedin.com/in/thunyut/)\n3. **Theme System**: Implement Light/Dark theme switcher with dark as default theme\n4. **Currency System**: Add currency selector in navigation with global currency formatting\n5. **Multi-language Support**: Add EN/TH language support with EN as default\n6. **Localization Fixes**: Fix all month names to English (currently showing Thai names)\n7. **Settings Persistence**: Include theme, currency, and language settings in import/export\n8. **Edit UX Improvement**: Fix edit data behavior across pages for better UX when editing long lists",
         "testStrategy": "Test theme switching, language switching, currency changes, footer display, navigation icons, and edit UX across all pages. Verify settings persist in import/export and localStorage.",
-        "status": "pending",
-        "dependencies": [20],
+        "status": "in-progress",
+        "dependencies": [
+          20
+        ],
         "priority": "high",
         "subtasks": [
           {
@@ -1021,7 +1023,7 @@
             "title": "Update Footer and Navigation Icons",
             "description": "Update footer text and add GitHub/LinkedIn icons to navigation",
             "details": "Change footer to show proper attribution and add social media icons with proper links",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 24
           },
@@ -1030,7 +1032,7 @@
             "title": "Implement Theme System",
             "description": "Create Light/Dark theme switcher with dark as default",
             "details": "Implement theme context, toggle component, and ensure all components support both themes",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 24
           },
@@ -1039,7 +1041,7 @@
             "title": "Add Currency Selection System",
             "description": "Implement currency selector with global formatting",
             "details": "Create currency context, selector component, and update all currency displays to use selected currency",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 24
           },
@@ -1048,7 +1050,7 @@
             "title": "Implement Multi-language Support",
             "description": "Add EN/TH language support with EN as default",
             "details": "Create i18n system, translation files, and language selector component",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 24
           },
@@ -1057,8 +1059,10 @@
             "title": "Fix Month Names Localization",
             "description": "Fix all month names to display in English",
             "details": "Update all month display logic to show English month names consistently",
-            "status": "pending",
-            "dependencies": [4],
+            "status": "done",
+            "dependencies": [
+              4
+            ],
             "parentTaskId": 24
           },
           {
@@ -1066,8 +1070,12 @@
             "title": "Add Settings to Import/Export",
             "description": "Include theme, currency, and language settings in import/export functionality",
             "details": "Update UserPlan model and save/load functions to include UI settings",
-            "status": "pending",
-            "dependencies": [2, 3, 4],
+            "status": "in-progress",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
             "parentTaskId": 24
           },
           {
@@ -1075,7 +1083,7 @@
             "title": "Improve Edit Data UX",
             "description": "Fix edit behavior across pages for better UX with long lists",
             "details": "Implement auto-scroll to edit panel, better visual feedback, and improved edit form positioning",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 24
           }
@@ -1088,7 +1096,9 @@
         "details": "This task involves a comprehensive dashboard redesign to make it more informative and user-friendly.\n\n**Layout Changes:**\n1. **Remove Goal Progress Box**: Remove the current goal progress box from top\n2. **Add Annual Income/Expense Stats**: Show annual income and expense (calculated from forecast starting month for 12 months)\n3. **Add 2 More Stat Boxes**: Create 4 total stat boxes with meaningful financial insights\n4. **Move Quick Actions to Top**: Relocate Quick Actions to top but make it more compact (half height)\n5. **Reorganize Goal Sections**: Move Goal Progress Tracking to bottom, add Upcoming Goals under it\n6. **Replace High Priority Goals**: Change to \"Top Expense Months\" showing 5-10 months with highest expenses\n7. **Replace Priority Suggestions**: Use suggestions from Suggestions page instead of duplicate logic\n8. **First-time User Guidance**: Add tutorial/guidance for users with no data",
         "testStrategy": "Test with existing data and with no data to verify new layout, stat calculations, and first-time user experience. Verify all moved components function correctly.",
         "status": "pending",
-        "dependencies": [24],
+        "dependencies": [
+          24
+        ],
         "priority": "high",
         "subtasks": [
           {
@@ -1106,7 +1116,9 @@
             "description": "Create 2 more insightful statistics for total of 4 stat boxes",
             "details": "Design meaningful metrics like savings rate, emergency fund ratio, goal completion rate, or expense trend",
             "status": "pending",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "parentTaskId": 25
           },
           {
@@ -1142,7 +1154,9 @@
             "description": "Create Upcoming Goals component showing next 6 months under Goal Progress",
             "details": "Show goals expected to be completed in next 6 months",
             "status": "pending",
-            "dependencies": [3],
+            "dependencies": [
+              3
+            ],
             "parentTaskId": 25
           },
           {
@@ -1163,7 +1177,10 @@
         "details": "This task focuses on fixing remaining forecast issues and improving data persistence.\n\n**Key Components:**\n1. **Settings Persistence**: Make starting balance, start date, and forecast period part of import/export file\n2. **Remove Save Config Button**: No longer needed once settings are in import/export\n3. **Fix Goal Progress Calculations**: Goals hitting 100% in December should not show 'behind schedule'\n4. **Fix Progress Bar Colors**: Completed goals should show green, not red progress bars\n5. **Improve Calculation Accuracy**: Ensure all goal progress calculations are accurate",
         "testStrategy": "Test goal progress calculations, verify settings persist in import/export, test progress bar colors for completed and in-progress goals.",
         "status": "pending",
-        "dependencies": [23, 24],
+        "dependencies": [
+          23,
+          24
+        ],
         "priority": "high",
         "subtasks": [
           {
@@ -1181,7 +1198,9 @@
             "description": "Remove the save config button from forecast page since settings are now persisted",
             "details": "Clean up UI and remove unnecessary save button",
             "status": "pending",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "parentTaskId": 26
           },
           {
@@ -1199,7 +1218,9 @@
             "description": "Change completed goals to show green progress bars instead of red",
             "details": "Update progress bar color logic based on goal completion status",
             "status": "pending",
-            "dependencies": [3],
+            "dependencies": [
+              3
+            ],
             "parentTaskId": 26
           }
         ]
@@ -1211,7 +1232,9 @@
         "details": "This task transforms the current Suggestions page into a more valuable and insightful experience centered around the Monthly Goal Allocation Schedule.\n\n**Key Components:**\n1. **Center Around Monthly Goal Allocation**: Make the Monthly Goal Allocation Schedule the main feature\n2. **Rename Page**: Change from 'Suggestions' to something more relevant like 'Goal Planning' or 'Allocation Schedule'\n3. **Remove Duplicate Suggestions**: Remove suggestion list since it's moved to Dashboard\n4. **Enhance Allocation Features**: Improve the allocation schedule with better visualization and insights\n5. **Add Planning Tools**: Include tools to help users plan their goal allocations more effectively",
         "testStrategy": "Test new page layout, verify Monthly Goal Allocation Schedule works correctly, ensure removed suggestions appear properly on Dashboard.",
         "status": "pending",
-        "dependencies": [25],
+        "dependencies": [
+          25
+        ],
         "priority": "medium",
         "subtasks": [
           {
@@ -1238,7 +1261,10 @@
             "description": "Improve visualization and features of the allocation schedule",
             "details": "Add better charts, export options, and planning tools for goal allocations",
             "status": "pending",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "parentTaskId": 27
           },
           {
@@ -1247,15 +1273,106 @@
             "description": "Add tools to help users plan their goal allocations more effectively",
             "details": "Include features like 'what-if' scenarios, allocation optimization suggestions, and timeline adjustments",
             "status": "pending",
-            "dependencies": [3],
+            "dependencies": [
+              3
+            ],
             "parentTaskId": 27
+          }
+        ]
+      },
+      {
+        "id": 28,
+        "title": "Implement Full Content Localization",
+        "description": "Implement comprehensive content localization across all pages. Currently only the navigation bar uses translations, but page content, labels, buttons, and messages need to be localized.",
+        "details": "This task involves implementing full internationalization across the entire application.\n\n**Current State:**\n- Navigation bar is properly localized with language selector\n- All page content still uses hardcoded English text\n- Forms, buttons, labels, and error messages are not localized\n\n**Required Work:**\n1. **Extend Translation System**: Add comprehensive translation keys for all content\n2. **Update Page Content**: Localize all text in dashboard, goals, income, expenses, forecast, and suggestions pages\n3. **Localize Forms**: Translate all form labels, placeholders, validation messages\n4. **Localize Buttons and UI Elements**: Translate all interactive elements\n5. **Update Chart Components**: Localize chart labels, tooltips, and legends\n6. **Add Error Message Translations**: Implement localized error handling\n7. **Test Both Languages**: Ensure all content displays correctly in English and Thai",
+        "testStrategy": "Test language switching across all pages, verify all text content changes appropriately, check form validation messages in both languages, ensure no hardcoded text remains.",
+        "status": "pending",
+        "dependencies": [
+          24
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Extend Translation Keys for All Content",
+            "description": "Add comprehensive translation keys to LanguageContext for all page content",
+            "details": "Extend the translation object to include keys for dashboard, goals, income, expenses, forecast pages and all UI elements",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 28
+          },
+          {
+            "id": 2,
+            "title": "Localize Dashboard Page Content",
+            "description": "Replace all hardcoded text in dashboard page with translation keys",
+            "details": "Update dashboard stats, section headers, buttons, and all text content to use t() function",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
+          },
+          {
+            "id": 3,
+            "title": "Localize Goals Page Content",
+            "description": "Replace all hardcoded text in goals page with translation keys",
+            "details": "Update form labels, buttons, goal categories, priority levels, and all text content",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
+          },
+          {
+            "id": 4,
+            "title": "Localize Income and Expenses Pages",
+            "description": "Replace all hardcoded text in income and expenses pages with translation keys",
+            "details": "Update form fields, frequency options, categories, and all text content",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
+          },
+          {
+            "id": 5,
+            "title": "Localize Forecast Page Content",
+            "description": "Replace all hardcoded text in forecast page with translation keys",
+            "details": "Update forecast settings, chart labels, summary statistics, and all text content",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
+          },
+          {
+            "id": 6,
+            "title": "Localize Chart Components",
+            "description": "Update all chart components to use localized labels and tooltips",
+            "details": "Update IncomeVsExpensesChart, ExpenseCategoryChart, GoalProgressChart to use translation keys",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
+          },
+          {
+            "id": 7,
+            "title": "Implement Localized Error Messages",
+            "description": "Add translation support for all error messages and validation feedback",
+            "details": "Create error message translation keys and update all form validation to use localized messages",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "parentTaskId": 28
           }
         ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-01-12T14:30:00.000Z",
+      "updated": "2025-07-06T07:40:53.753Z",
       "description": "Tasks for master context"
     }
   }

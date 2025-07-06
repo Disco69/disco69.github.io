@@ -16,8 +16,9 @@ import {
   ProgressChart,
 } from "recharts";
 import { UserPlan, Goal, GoalType, Priority } from "@/types";
-import { formatCurrency } from "@/utils/currency";
 import { generateForecast } from "@/utils/forecastCalculator";
+import { useFinancialState } from "@/context";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface GoalProgressChartProps {
   userPlan: UserPlan;
@@ -62,6 +63,9 @@ export default function GoalProgressChart({
   >("progress");
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [showOnlyActive, setShowOnlyActive] = useState(true);
+
+  const state = useFinancialState();
+  const { formatCurrency } = useCurrency();
 
   // Process goal data for visualization
   const goalData = useMemo(() => {

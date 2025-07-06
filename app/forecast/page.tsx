@@ -7,11 +7,15 @@ import {
   ForecastConfig as UtilsForecastConfig,
   ForecastResult,
 } from "@/utils/forecastCalculator";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatDateWithTranslations } from "@/utils/dateFormatting";
 import { ForecastConfig } from "@/types";
 
 export default function ForecastPage() {
   const { state, updateForecastConfig, saveUserPlan } = useFinancialContext();
+  const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const [localConfig, setLocalConfig] = useState<ForecastConfig>(
     state.userPlan?.forecastConfig || {
       startingBalance: state.userPlan?.currentBalance || 0,
@@ -133,10 +137,10 @@ export default function ForecastPage() {
   }, [localConfig]);
 
   const formatMonth = (monthKey: string) => {
-    const date = new Date(monthKey + "-01");
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
+    return formatDateWithTranslations(monthKey + "-01", t, {
+      includeYear: true,
+      shortMonth: false,
+      includeDate: false,
     });
   };
 

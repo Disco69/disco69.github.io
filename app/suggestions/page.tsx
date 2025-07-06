@@ -16,9 +16,12 @@ import {
   ForecastConfig as UtilsForecastConfig,
 } from "@/utils/forecastCalculator";
 import { ForecastConfig } from "@/types";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatLocalizedMonth } from "@/utils/dateFormatting";
 
 export default function SuggestionsPage() {
   const state = useFinancialState();
+  const { language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "income" | "expense" | "goal" | "general"
   >("all");
@@ -147,11 +150,7 @@ export default function SuggestionsPage() {
 
   // Format month for display
   const formatMonth = (monthKey: string) => {
-    const date = new Date(monthKey + "-01");
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-    });
+    return formatLocalizedMonth(monthKey, language);
   };
 
   // Get goal allocation data for calendar view with percentage progress

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFinancialContext } from "@/context";
 import {
   Goal,
@@ -9,8 +9,13 @@ import {
   Priority,
   CreateGoalInput,
 } from "@/types";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
 import { generateForecast } from "@/utils/forecastCalculator";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  formatDateWithTranslations,
+  formatLocalizedMonth,
+} from "@/utils/dateFormatting";
 
 // Goal category icons mapping
 const goalCategoryIcons = {
@@ -60,6 +65,8 @@ const priorityConfig = {
 
 export default function GoalsPage() {
   const { state, addGoal, updateGoal, deleteGoal } = useFinancialContext();
+  const { language, t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<
@@ -68,6 +75,19 @@ export default function GoalsPage() {
   const [sortBy, setSortBy] = useState<
     "name" | "targetDate" | "progress" | "priority"
   >("targetDate");
+
+  // Form ref for auto-scroll
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to form when editing starts
+  useEffect(() => {
+    if (isAddingGoal && formRef.current) {
+      formRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [isAddingGoal]);
 
   // Form state
   const [formData, setFormData] = useState<CreateGoalInput>({
@@ -207,10 +227,9 @@ export default function GoalsPage() {
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return formatDateWithTranslations(dateString, t, {
+      includeYear: true,
+      shortMonth: true,
     });
   };
 
@@ -249,11 +268,7 @@ export default function GoalsPage() {
   const formatCompletionDate = (monthString?: string) => {
     if (!monthString) return "Not determined";
 
-    const date = new Date(monthString + "-01");
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-    });
+    return formatLocalizedMonth(monthString, language);
   };
 
   // Get goal type label
@@ -426,10 +441,20 @@ export default function GoalsPage() {
 
       {/* Add/Edit Goal Form */}
       {isAddingGoal && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {editingGoal ? "Edit Goal" : "Add New Goal"}
-          </h3>
+        <div
+          ref={formRef}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border-2 border-blue-200 dark:border-blue-800"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {editingGoal ? "Edit Goal" : "Add New Goal"}
+            </h3>
+            {editingGoal && (
+              <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                📝 {editingGoal.name}
+              </div>
+            )}
+          </div>
           <form
             onSubmit={handleSubmit}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -691,8 +716,35 @@ export default function GoalsPage() {
               const goalTypeLabel = getGoalTypeLabel(goal.goalType);
 
               return (
-                <div key={goal.id} className="p-6">
+                <div
+                  key={goal.id}
+                  className={`p-6 transition-all duration-300 ${
+                    editingGoal?.id === goal.id
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg"
+                      : ""
+                  }`}
+                >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    {/* Editing indicator */}
+                    {editingGoal?.id === goal.id && (
+                      <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400 text-sm font-medium">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Currently editing this goal
+                      </div>
+                    )}
+
                     {/* Goal Info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">

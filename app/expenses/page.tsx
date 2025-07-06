@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useFinancialState, useFinancialActions } from "@/context";
 import {
   Frequency,
@@ -9,17 +9,31 @@ import {
   CreateExpenseInput,
   UpdateExpenseInput,
 } from "@/types";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
 
 export default function ExpensesPage() {
   const state = useFinancialState();
   const { addExpense, updateExpense, deleteExpense } = useFinancialActions();
+  const { formatCurrency } = useCurrency();
 
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<
     ExpenseCategory | "all"
   >("all");
+
+  // Form ref for auto-scroll
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to form when editing starts
+  useEffect(() => {
+    if (isAddFormOpen && formRef.current) {
+      formRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [isAddFormOpen]);
   const [formData, setFormData] = useState<CreateExpenseInput>({
     name: "",
     amount: 0,
@@ -460,10 +474,20 @@ export default function ExpensesPage() {
 
       {/* Add/Edit Form */}
       {isAddFormOpen && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {editingExpense ? "Edit Expense" : "Add New Expense"}
-          </h3>
+        <div
+          ref={formRef}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border-2 border-blue-200 dark:border-blue-800"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {editingExpense ? "Edit Expense" : "Add New Expense"}
+            </h3>
+            {editingExpense && (
+              <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                📝 {formData.name || "Expense"}
+              </div>
+            )}
+          </div>
 
           <form
             onSubmit={handleSubmit}
@@ -745,7 +769,34 @@ export default function ExpensesPage() {
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {filteredExpenses.map((expense) => (
-              <div key={expense.id} className="p-6">
+              <div
+                key={expense.id}
+                className={`p-6 transition-all duration-300 ${
+                  editingExpense === expense.id
+                    ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg"
+                    : ""
+                }`}
+              >
+                {/* Editing indicator */}
+                {editingExpense === expense.id && (
+                  <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400 text-sm font-medium">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                    Currently editing this expense
+                  </div>
+                )}
+
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

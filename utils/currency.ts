@@ -1,30 +1,32 @@
 /**
- * Currency Utility Functions for THB (Thai Baht)
+ * Currency Utility Functions
  *
- * Centralized currency formatting and conversion utilities
- * for consistent THB display throughout the application.
+ * Legacy currency utilities for backward compatibility.
+ * For new code, use useCurrency() hook from CurrencyContext.
  */
 
 /**
- * Format amount as Thai Baht currency
+ * @deprecated Use useCurrency().formatCurrency() instead
+ * Legacy format function that defaults to USD for backward compatibility
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("th-TH", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "THB",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
 }
 
 /**
- * Format amount as Thai Baht currency with compact notation for large numbers
+ * @deprecated Use useCurrency().formatCurrency(amount, true) instead
+ * Legacy compact format function that defaults to USD
  */
 export function formatCurrencyCompact(amount: number): string {
   if (Math.abs(amount) >= 1000000) {
-    return new Intl.NumberFormat("th-TH", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "THB",
+      currency: "USD",
       notation: "compact",
       minimumFractionDigits: 0,
       maximumFractionDigits: 1,
@@ -34,12 +36,14 @@ export function formatCurrencyCompact(amount: number): string {
 }
 
 /**
- * Parse currency string back to number (removes THB symbol and formatting)
+ * @deprecated Use useCurrency().parseCurrency() instead
+ * Legacy parse function for backward compatibility
  */
 export function parseCurrency(currencyString: string): number {
-  // Remove THB symbol, spaces, and commas, then parse
+  // Remove currency symbols, spaces, and commas, then parse
   const cleanString = currencyString
-    .replace(/[฿,\s]/g, "")
+    .replace(/[฿$€£¥₹₩Fr,\s]/g, "")
+    .replace(/[A-Z]/g, "") // Remove currency codes like A$, C$, S$
     .replace(/[^\d.-]/g, "");
 
   const parsed = parseFloat(cleanString);
@@ -47,10 +51,11 @@ export function parseCurrency(currencyString: string): number {
 }
 
 /**
- * Format number as THB without currency symbol (for input fields)
+ * @deprecated Use useCurrency().formatNumber() instead
+ * Legacy number format function that defaults to USD locale
  */
 export function formatNumber(amount: number): string {
-  return new Intl.NumberFormat("th-TH", {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
@@ -60,24 +65,24 @@ export function formatNumber(amount: number): string {
  * Validate if a string is a valid currency amount
  */
 export function isValidCurrencyAmount(value: string): boolean {
-  const cleaned = value.replace(/[฿,\s]/g, "");
+  const cleaned = value.replace(/[฿$€£¥₹₩Fr,\s]/g, "").replace(/[A-Z]/g, "");
   const number = parseFloat(cleaned);
   return !isNaN(number) && number >= 0;
 }
 
 /**
- * Currency constants
+ * @deprecated Legacy constants - use SUPPORTED_CURRENCIES from CurrencyContext instead
  */
-export const CURRENCY_SYMBOL = "฿";
-export const CURRENCY_CODE = "THB";
-export const CURRENCY_NAME = "Thai Baht";
+export const CURRENCY_SYMBOL = "$";
+export const CURRENCY_CODE = "USD";
+export const CURRENCY_NAME = "US Dollar";
 
 /**
- * Default currency formatting options
+ * @deprecated Legacy options - use useCurrency() hook instead
  */
 export const DEFAULT_CURRENCY_OPTIONS: Intl.NumberFormatOptions = {
   style: "currency",
-  currency: "THB",
+  currency: "USD",
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
 };

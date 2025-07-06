@@ -11,12 +11,11 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Treemap,
 } from "recharts";
 import { UserPlan, ExpenseCategory, Frequency } from "@/types";
-import { formatCurrency } from "@/utils/currency";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface ExpenseCategoryChartProps {
   userPlan: UserPlan;
@@ -78,6 +77,7 @@ export default function ExpenseCategoryChart({
   userPlan,
   className = "",
 }: ExpenseCategoryChartProps) {
+  const { formatCurrency } = useCurrency();
   const [viewMode, setViewMode] = useState<"pie" | "donut" | "bar" | "treemap">(
     "donut"
   );

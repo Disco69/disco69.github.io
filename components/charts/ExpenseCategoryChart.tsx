@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -169,41 +171,23 @@ export default function ExpenseCategoryChart({
     );
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: any[];
+  }) => {
+    if (active && payload && payload.length > 0) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-w-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{CATEGORY_ICONS[data.category]}</span>
-            <p className="font-semibold text-gray-900 dark:text-gray-100">
-              {formatCategoryName(data.category)}
-            </p>
-          </div>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">
-                Monthly Amount:
-              </span>
-              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                {formatCurrency(data.amount)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">
-                Percentage:
-              </span>
-              <span className="font-semibold">
-                {data.percentage.toFixed(1)}%
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">
-                Expenses:
-              </span>
-              <span className="font-semibold">{data.count} items</span>
-            </div>
-          </div>
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {data.name}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {formatCurrency(data.value)}
+          </p>
         </div>
       );
     }
@@ -331,7 +315,13 @@ export default function ExpenseCategoryChart({
             tickFormatter={(value) => formatCurrency(value)}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip
+            content={<CustomTooltip />}
+            labelFormatter={(value: string) => value}
+            cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+            labelStyle={{ color: "inherit" }}
+            itemStyle={{ color: "inherit" }}
+          />
           <Bar
             dataKey="amount"
             fill={(entry: any) => entry.color}

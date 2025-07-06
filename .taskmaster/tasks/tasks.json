@@ -1012,7 +1012,7 @@
         "description": "Implement comprehensive UI/UX improvements including navigation enhancements, footer update, theme system, currency selection, and multi-language support.",
         "details": "This task encompasses major UI/UX improvements to create a more professional and internationally accessible application.\n\n**Key Components:**\n1. **Footer Update**: Change footer to show \"2025 Personal Finance Planner by Fang (Thunyut Chienpairoj)\"\n2. **Navigation Enhancement**: Add GitHub icon (link TBD) and LinkedIn icon (https://www.linkedin.com/in/thunyut/)\n3. **Theme System**: Implement Light/Dark theme switcher with dark as default theme\n4. **Currency System**: Add currency selector in navigation with global currency formatting\n5. **Multi-language Support**: Add EN/TH language support with EN as default\n6. **Localization Fixes**: Fix all month names to English (currently showing Thai names)\n7. **Settings Persistence**: Include theme, currency, and language settings in import/export\n8. **Edit UX Improvement**: Fix edit data behavior across pages for better UX when editing long lists",
         "testStrategy": "Test theme switching, language switching, currency changes, footer display, navigation icons, and edit UX across all pages. Verify settings persist in import/export and localStorage.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           20
         ],
@@ -1070,7 +1070,7 @@
             "title": "Add Settings to Import/Export",
             "description": "Include theme, currency, and language settings in import/export functionality",
             "details": "Update UserPlan model and save/load functions to include UI settings",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [
               2,
               3,
@@ -1372,7 +1372,7 @@
     ],
     "metadata": {
       "created": "2025-07-04T17:21:02.210Z",
-      "updated": "2025-07-06T07:40:53.753Z",
+      "updated": "2025-07-06T07:52:24.886Z",
       "description": "Tasks for master context"
     }
   }

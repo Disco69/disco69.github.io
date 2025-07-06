@@ -7,7 +7,6 @@ import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
-import LanguageSelector from "@/components/LanguageSelector";
 import Navigation from "@/components/Navigation";
 
 const geistSans = Geist({
@@ -62,9 +61,6 @@ export default function RootLayout({
 
                           {/* Settings and Social Media Icons */}
                           <div className="flex items-center space-x-4">
-                            {/* Language Selector */}
-                            <LanguageSelector />
-
                             {/* Currency Selector */}
                             <CurrencySelector />
 

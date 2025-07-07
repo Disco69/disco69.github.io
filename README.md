@@ -4,6 +4,16 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.5-blue?logo=nextdotjs)](https://nextjs.org/) [![React](https://img.shields.io/badge/React-19.0.0-61dafb?logo=react)](https://react.dev/) [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4.0.0-38bdf8?logo=tailwindcss)](https://tailwindcss.com/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-3178c6?logo=typescript)](https://www.typescriptlang.org/) [![Recharts](https://img.shields.io/badge/Recharts-3.0.2-ff7300?logo=recharts)](https://recharts.org/)
 
+---
+
+> ⚠️ **Important: Desktop-First Experience**
+>
+> This version works **best on desktop**. Mobile support is still a work in progress and some features or navigation may not work as expected on phones or small screens.
+>
+> 📱 **Improved mobile support is on the roadmap and will be updated in future releases!**
+
+---
+
 ![Dashboard Screenshot](./assets/dashboard-screenshot.png)
 
 <p align="center"><i>📸 Dashboard: Your complete financial overview at a glance</i></p>

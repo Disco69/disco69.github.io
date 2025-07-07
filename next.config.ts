@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
@@ -7,8 +8,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   // Uncomment and set the basePath if your repo name is not the root domain
-  basePath: "/personal-finance-planner",
-  assetPrefix: "/personal-finance-planner/",
+  basePath: isProd ? "/personal-finance-planner" : "",
+  assetPrefix: isProd ? "/personal-finance-planner/" : "",
 };
 
 export default nextConfig;

@@ -1,1 +1,1 @@
-Remove deploy workflow
+Configure for GitHub Pages deployment

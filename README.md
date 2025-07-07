@@ -87,7 +87,7 @@ This project is managed with [Taskmaster](https://github.com/eyaltoledano/claude
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/oofangoo/personal-finance-planner.git
+git clone https://github.com/Disco69/personal-finance-planner.git
 cd personal-finance-planner
 ```
 
@@ -186,7 +186,7 @@ Contributions are welcome! Please open issues or pull requests for bugs, feature
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/oofangoo/personal-finance-planner)
+- [GitHub Repository](https://github.com/Disco69/personal-finance-planner)
 - [LinkedIn (Thunyut Chienpairoj)](https://www.linkedin.com/in/thunyut/)
 - [Taskmaster Project Management](https://github.com/eyaltoledano/claude-task-master)
 

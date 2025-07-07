@@ -69,7 +69,7 @@ export default function RootLayout({
 
                             {/* GitHub Icon - Now with correct link */}
                             <a
-                              href="https://github.com/oofangoo/personal-finance-planner"
+                              href="https://github.com/Disco69/personal-finance-planner"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

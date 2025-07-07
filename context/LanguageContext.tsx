@@ -99,6 +99,7 @@ const translations = {
     "nav.forecast": "Forecast",
     "nav.goalPlanning": "Goal Planning",
     "nav.importExport": "Import/Export",
+    "nav.menu": "Menu",
 
     // Dashboard
     "dashboard.title": "Finance Planner",
@@ -158,6 +159,7 @@ const translations = {
     "nav.forecast": "พยากรณ์",
     "nav.goalPlanning": "วางแผนเป้าหมาย",
     "nav.importExport": "นำเข้า/ส่งออก",
+    "nav.menu": "เมนู",
 
     // Dashboard
     "dashboard.title": "วางแผนการเงิน",

@@ -1,1 +1,1 @@
-Configure for GitHub Pages deployment
+Update GitHub repository links

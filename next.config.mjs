@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '/personal-finance-planner',
+  basePath: '/planner69',
 };
 
 export default nextConfig;
